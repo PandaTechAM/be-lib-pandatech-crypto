@@ -6,7 +6,7 @@ namespace PandatechCrypto
 {
     public static class Argon2Helper
     {
-        public static byte[] CreateSalt()
+        private static byte[] CreateSalt()
         {
             using var rng = RandomNumberGenerator.Create();
             var buffer = new byte[16];
@@ -14,8 +14,11 @@ namespace PandatechCrypto
             return buffer;
         }
 
-        public static byte[] HashPassword(string password, byte[] salt, int memorySize = 128 * 1024)
+        public static byte[] HashPassword(string password, byte[]? salt = null)
         {
+            if(salt == null)
+                salt = CreateSalt();
+
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
             {
                 Salt = salt,
@@ -25,11 +28,15 @@ namespace PandatechCrypto
 
             };
 
-            return argon2.GetBytes(32);
+            var result = salt.Concat(argon2.GetBytes(32)).ToArray();
+
+            return result;
         }
 
-        public static bool VerifyHash(string password, byte[] salt, byte[] hash)
+        public static bool VerifyHash(string password, byte[] hash)
         {
+            byte[] salt = hash.Skip(16).ToArray();
+
             var newHash = HashPassword(password, salt);
             return ConstantTimeComparison(hash, newHash);
         }
