@@ -16,7 +16,7 @@ namespace PandatechCrypto
 
         public static byte[] HashPassword(string password, byte[]? salt = null)
         {
-            if(salt == null)
+            if (salt == null)
                 salt = CreateSalt();
 
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))

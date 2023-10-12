@@ -15,7 +15,7 @@ namespace PandatechCrypto
             aesAlg.Padding = PaddingMode.PKCS7;
             aesAlg.Key = Convert.FromBase64String(Key);
             aesAlg.GenerateIV();
-            
+
             var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
 
             using var msEncrypt = new MemoryStream();
