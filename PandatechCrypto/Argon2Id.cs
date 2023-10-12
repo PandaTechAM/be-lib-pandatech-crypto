@@ -4,12 +4,17 @@ using System.Text;
 
 namespace PandatechCrypto
 {
-    public static class Argon2Helper
+    public static class Argon2Id
     {
+        private const int SaltSize = 16;
+        private const int DegreeOfParallelism = 8;
+        private const int Iterations = 5;
+        private const int MemorySize = 128 * 1024; // 256 MB
+
         private static byte[] CreateSalt()
         {
             using var rng = RandomNumberGenerator.Create();
-            var buffer = new byte[16];
+            var buffer = new byte[SaltSize];
             rng.GetBytes(buffer);
             return buffer;
         }
@@ -21,10 +26,9 @@ namespace PandatechCrypto
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
             {
                 Salt = salt,
-                DegreeOfParallelism = 4,
-                Iterations = 4,
-                MemorySize = 256 * 1024
-
+                DegreeOfParallelism = DegreeOfParallelism,
+                Iterations = Iterations,
+                MemorySize = MemorySize
             };
 
             var result = salt.Concat(argon2.GetBytes(32)).ToArray();
@@ -37,10 +41,9 @@ namespace PandatechCrypto
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
             {
                 Salt = salt,
-                DegreeOfParallelism = 4,
-                Iterations = 4,
-                MemorySize = 256 * 1024
-
+                DegreeOfParallelism = DegreeOfParallelism,
+                Iterations = Iterations,
+                MemorySize = MemorySize
             };
 
             var result = salt.Concat(argon2.GetBytes(32)).ToArray();
@@ -50,7 +53,7 @@ namespace PandatechCrypto
 
         public static bool VerifyHash(string password, byte[] hash)
         {
-            byte[] salt = hash.Skip(16).ToArray();
+            var salt = hash.Take(SaltSize).ToArray();
 
             var newHash = HashPassword(password, salt);
             return ConstantTimeComparison(hash, newHash);
@@ -63,6 +66,7 @@ namespace PandatechCrypto
             {
                 diff |= (uint)(a[i] ^ b[i]);
             }
+
             return diff == 0;
         }
     }

@@ -2,16 +2,16 @@
 
 namespace PandatechCrypto
 {
-    public static class AesHelper
+    public static class Aes256
     {
-
         private static readonly string Key = Environment.GetEnvironmentVariable("AES_KEY")!;
+        private const int KeySize = 256;
+        private const int IvSize = 16;
 
         public static byte[] Encrypt(string plainText)
         {
-
             using var aesAlg = Aes.Create();
-            aesAlg.KeySize = 256;
+            aesAlg.KeySize = KeySize;
             aesAlg.Padding = PaddingMode.PKCS7;
             aesAlg.Key = Convert.FromBase64String(Key);
             aesAlg.GenerateIV();
@@ -27,19 +27,17 @@ namespace PandatechCrypto
 
             var encryptedPasswordByte = msEncrypt.ToArray();
 
-            byte[] result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
+            var result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
             return result;
         }
 
         public static string Decrypt(byte[] cipherText)
         {
-            int splitIndex = 16;
-
-            byte[] iv = cipherText.Take(splitIndex).ToArray();
-            byte[] encrypted = cipherText.Skip(splitIndex).ToArray();
+            var iv = cipherText.Take(IvSize).ToArray();
+            var encrypted = cipherText.Skip(IvSize).ToArray();
 
             using var aesAlg = Aes.Create();
-            aesAlg.KeySize = 256;
+            aesAlg.KeySize = KeySize;
             aesAlg.Padding = PaddingMode.PKCS7;
             aesAlg.Key = Convert.FromBase64String(Key);
             aesAlg.IV = iv;
