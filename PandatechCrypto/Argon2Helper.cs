@@ -14,11 +14,26 @@ namespace PandatechCrypto
             return buffer;
         }
 
-        public static byte[] HashPassword(string password, byte[]? salt = null)
+        public static byte[] HashPassword(string password)
         {
-            if (salt == null)
-                salt = CreateSalt();
+            var salt = CreateSalt();
 
+            using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
+            {
+                Salt = salt,
+                DegreeOfParallelism = 4,
+                Iterations = 4,
+                MemorySize = 256 * 1024
+
+            };
+
+            var result = salt.Concat(argon2.GetBytes(32)).ToArray();
+
+            return result;
+        }
+
+        private static byte[] HashPassword(string password, byte[] salt)
+        {
             using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
             {
                 Salt = salt,
