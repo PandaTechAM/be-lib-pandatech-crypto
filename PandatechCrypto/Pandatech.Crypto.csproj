@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -9,6 +9,7 @@
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <Description>PandaTech.Crypto is a .NET library simplifying AES256 encryption and decryption, alongside secure Argon2id hashing for password management. With optimal default configurations, it's designed for ease of use while ensuring robust security. Tested successfully on modest server environments, it provides a reliable solution for cryptographic operations.</Description>
     <Title>PandaTech.Crypto</Title>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
   </PropertyGroup>
 
@@ -29,5 +30,4 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
 </Project>
