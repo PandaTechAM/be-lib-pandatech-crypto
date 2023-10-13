@@ -10,25 +10,7 @@ namespace PandatechCrypto
 
         public static byte[] Encrypt(string plainText)
         {
-            using var aesAlg = Aes.Create();
-            aesAlg.KeySize = KeySize;
-            aesAlg.Padding = PaddingMode.PKCS7;
-            aesAlg.Key = Convert.FromBase64String(Key);
-            aesAlg.GenerateIV();
-
-            var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-            using var msEncrypt = new MemoryStream();
-            using var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
-            using var swEncrypt = new StreamWriter(csEncrypt);
-            swEncrypt.Write(plainText);
-            swEncrypt.Flush();
-            csEncrypt.FlushFinalBlock();
-
-            var encryptedPasswordByte = msEncrypt.ToArray();
-
-            var result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
-            return result;
+            return Encrypt(plainText, Key);
         }
 
         public static byte[] Encrypt(string plainText, string key)
@@ -56,21 +38,7 @@ namespace PandatechCrypto
 
         public static string Decrypt(byte[] cipherText)
         {
-            var iv = cipherText.Take(IvSize).ToArray();
-            var encrypted = cipherText.Skip(IvSize).ToArray();
-
-            using var aesAlg = Aes.Create();
-            aesAlg.KeySize = KeySize;
-            aesAlg.Padding = PaddingMode.PKCS7;
-            aesAlg.Key = Convert.FromBase64String(Key);
-            aesAlg.IV = iv;
-
-            var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-            using var msDecrypt = new MemoryStream(encrypted);
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt);
-            return srDecrypt.ReadToEnd();
+            return Decrypt(cipherText, Key);
         }
 
         public static string Decrypt(byte[] cipherText, string key)

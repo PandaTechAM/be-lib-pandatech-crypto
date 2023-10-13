@@ -22,18 +22,7 @@ namespace PandatechCrypto
         public static byte[] HashPassword(string password)
         {
             var salt = CreateSalt();
-
-            using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
-            {
-                Salt = salt,
-                DegreeOfParallelism = DegreeOfParallelism,
-                Iterations = Iterations,
-                MemorySize = MemorySize
-            };
-
-            var result = salt.Concat(argon2.GetBytes(32)).ToArray();
-
-            return result;
+            return HashPassword(password, salt);
         }
 
         private static byte[] HashPassword(string password, byte[] salt)
