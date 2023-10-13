@@ -2,61 +2,60 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace PandatechCrypto
+namespace PandaTechCrypto;
+
+public static class Argon2Id
 {
-    public static class Argon2Id
+    private const int SaltSize = 16;
+    private const int DegreeOfParallelism = 8;
+    private const int Iterations = 5;
+    private const int MemorySize = 128 * 1024; // 128 MB
+
+    private static byte[] CreateSalt()
     {
-        private const int SaltSize = 16;
-        private const int DegreeOfParallelism = 8;
-        private const int Iterations = 5;
-        private const int MemorySize = 128 * 1024; // 128 MB
+        using var rng = RandomNumberGenerator.Create();
+        var buffer = new byte[SaltSize];
+        rng.GetBytes(buffer);
+        return buffer;
+    }
 
-        private static byte[] CreateSalt()
+    public static byte[] HashPassword(string password)
+    {
+        var salt = CreateSalt();
+        return HashPassword(password, salt);
+    }
+
+    private static byte[] HashPassword(string password, byte[] salt)
+    {
+        using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
         {
-            using var rng = RandomNumberGenerator.Create();
-            var buffer = new byte[SaltSize];
-            rng.GetBytes(buffer);
-            return buffer;
+            Salt = salt,
+            DegreeOfParallelism = DegreeOfParallelism,
+            Iterations = Iterations,
+            MemorySize = MemorySize
+        };
+
+        var result = salt.Concat(argon2.GetBytes(32)).ToArray();
+
+        return result;
+    }
+
+    public static bool VerifyHash(string password, byte[] hash)
+    {
+        var salt = hash.Take(SaltSize).ToArray();
+
+        var newHash = HashPassword(password, salt);
+        return ConstantTimeComparison(hash, newHash);
+    }
+
+    private static bool ConstantTimeComparison(byte[] a, byte[] b)
+    {
+        var diff = (uint)a.Length ^ (uint)b.Length;
+        for (var i = 0; i < a.Length && i < b.Length; i++)
+        {
+            diff |= (uint)(a[i] ^ b[i]);
         }
 
-        public static byte[] HashPassword(string password)
-        {
-            var salt = CreateSalt();
-            return HashPassword(password, salt);
-        }
-
-        private static byte[] HashPassword(string password, byte[] salt)
-        {
-            using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
-            {
-                Salt = salt,
-                DegreeOfParallelism = DegreeOfParallelism,
-                Iterations = Iterations,
-                MemorySize = MemorySize
-            };
-
-            var result = salt.Concat(argon2.GetBytes(32)).ToArray();
-
-            return result;
-        }
-
-        public static bool VerifyHash(string password, byte[] hash)
-        {
-            var salt = hash.Take(SaltSize).ToArray();
-
-            var newHash = HashPassword(password, salt);
-            return ConstantTimeComparison(hash, newHash);
-        }
-
-        private static bool ConstantTimeComparison(byte[] a, byte[] b)
-        {
-            var diff = (uint)a.Length ^ (uint)b.Length;
-            for (var i = 0; i < a.Length && i < b.Length; i++)
-            {
-                diff |= (uint)(a[i] ^ b[i]);
-            }
-
-            return diff == 0;
-        }
+        return diff == 0;
     }
 }
