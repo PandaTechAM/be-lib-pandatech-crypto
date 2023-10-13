@@ -9,7 +9,7 @@ namespace PandatechCrypto
         private const int SaltSize = 16;
         private const int DegreeOfParallelism = 8;
         private const int Iterations = 5;
-        private const int MemorySize = 128 * 1024; // 256 MB
+        private const int MemorySize = 128 * 1024; // 128 MB
 
         private static byte[] CreateSalt()
         {
