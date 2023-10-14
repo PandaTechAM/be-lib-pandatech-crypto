@@ -1,8 +1,8 @@
-﻿using Konscious.Security.Cryptography;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
+using Konscious.Security.Cryptography;
 
-namespace PandaTechCrypto;
+namespace Pandatech.Crypto;
 
 public static class Argon2Id
 {
@@ -11,17 +11,10 @@ public static class Argon2Id
     private const int Iterations = 5;
     private const int MemorySize = 128 * 1024; // 128 MB
 
-    private static byte[] CreateSalt()
-    {
-        using var rng = RandomNumberGenerator.Create();
-        var buffer = new byte[SaltSize];
-        rng.GetBytes(buffer);
-        return buffer;
-    }
 
     public static byte[] HashPassword(string password)
     {
-        var salt = CreateSalt();
+        var salt = Random.GenerateBytes(SaltSize);
         return HashPassword(password, salt);
     }
 
