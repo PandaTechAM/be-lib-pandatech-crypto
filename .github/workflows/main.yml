@@ -24,10 +24,10 @@ jobs:
         run: dotnet build ./Pandatech.Crypto
 
       - name: Test
-        run: dotnet test ./Pandatech.Crypto --collect:"XPlat Code Coverage"
+        run: dotnet test ./PandatechCrypto --collect:"XPlat Code Coverage"
 
       - name: Pack
-        run: dotnet pack ./Pandatech.Crypto --output nupkgs
+        run: dotnet pack ./PandatechCrypto --output nupkgs
 
       - name: Publish
         run: dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

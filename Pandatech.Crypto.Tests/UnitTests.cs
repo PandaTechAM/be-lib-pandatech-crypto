@@ -1,4 +1,4 @@
-namespace Pandatech.Crypto.Tess;
+namespace Pandatech.Crypto.Tests;
 
 public class UnitTests
 {

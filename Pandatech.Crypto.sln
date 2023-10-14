@@ -5,7 +5,7 @@ VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pandatech.Crypto", "PandatechCrypto\Pandatech.Crypto.csproj", "{04362C72-3011-466E-81BB-FFBFC94D02C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandatech.Crypto.Tess", "Pandatech.Crypto.Tess\Pandatech.Crypto.Tess.csproj", "{89D6535F-549C-4091-BF21-96565F098C3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandatech.Crypto.Tests", "Pandatech.Crypto.Tests\Pandatech.Crypto.Tests.csproj", "{89D6535F-549C-4091-BF21-96565F098C3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
