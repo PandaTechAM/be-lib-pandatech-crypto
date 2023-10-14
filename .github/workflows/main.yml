@@ -1,0 +1,33 @@
+name: Deploy NuGet Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '7.x.x' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Build
+        run: dotnet build ./Pandatech.Crypto
+
+      - name: Test
+        run: dotnet test ./Pandatech.Crypto --collect:"XPlat Code Coverage"
+
+      - name: Pack
+        run: dotnet pack ./Pandatech.Crypto --output nupkgs
+
+      - name: Publish
+        run: dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
