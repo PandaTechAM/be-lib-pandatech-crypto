@@ -2,7 +2,7 @@
 using System.Text;
 using Konscious.Security.Cryptography;
 
-namespace Pandatech.Crypto;
+namespace Pandatech.Cryptos;
 
 public static class Argon2Id
 {

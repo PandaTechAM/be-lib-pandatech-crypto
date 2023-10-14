@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Pandatech.Crypto;
+namespace Pandatech.Cryptos;
 
 public static class Aes256
 {

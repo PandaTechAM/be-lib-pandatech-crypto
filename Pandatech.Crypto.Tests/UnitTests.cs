@@ -1,3 +1,6 @@
+using Pandatech.Cryptos;
+using Random = Pandatech.Cryptos.Random;
+
 namespace Pandatech.Crypto.Tests;
 
 public class UnitTests
@@ -6,16 +9,16 @@ public class UnitTests
     public void Generate_ShouldReturnByteArray()
     {
         const int length = 16;
-        var randomBytes = Random.GenerateBytes(length);
+        var randomBytes = Cryptos.Random.GenerateBytes(length);
 
         Assert.NotNull(randomBytes);
         Assert.Equal(length, randomBytes.Length);
     }
 
     [Theory]
-    [InlineData(25, true, true, true, true)]
-    [InlineData(25, false, true, false, false)]
-    [InlineData(25, true, true, true, false)]
+    [InlineData(100, true, true, true, true)]
+    [InlineData(10, false, true, false, false)]
+    [InlineData(50, true, true, true, false)]
     public void Generate_ShouldReturnPasswordWithCorrectProperties(
         int length,
         bool includeUppercase,
