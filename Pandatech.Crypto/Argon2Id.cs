@@ -1,8 +1,7 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using System.Text;
 using Konscious.Security.Cryptography;
 
-namespace Pandatech.Cryptos;
+namespace Pandatech.Crypto;
 
 public static class Argon2Id
 {
@@ -14,6 +13,10 @@ public static class Argon2Id
 
     public static byte[] HashPassword(string password)
     {
+        if (string.IsNullOrEmpty(password))
+        {
+            throw new ArgumentException("Password cannot be null or empty.", nameof(password));
+        }
         var salt = Random.GenerateBytes(SaltSize);
         return HashPassword(password, salt);
     }
@@ -35,6 +38,11 @@ public static class Argon2Id
 
     public static bool VerifyHash(string password, byte[] hash)
     {
+        if (hash == null || hash.Length <= SaltSize)
+        {
+            throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(hash));
+        }
+        
         var salt = hash.Take(SaltSize).ToArray();
 
         var newHash = HashPassword(password, salt);

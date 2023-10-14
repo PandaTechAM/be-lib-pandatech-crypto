@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Pandatech.Cryptos;
+namespace Pandatech.Crypto;
 
 public static class Aes256
 {
@@ -15,6 +15,7 @@ public static class Aes256
 
     public static byte[] Encrypt(string plainText, string key)
     {
+        ValidateInputs(plainText, key);
         using var aesAlg = Aes.Create();
         aesAlg.KeySize = KeySize;
         aesAlg.Padding = PaddingMode.PKCS7;
@@ -43,6 +44,7 @@ public static class Aes256
 
     public static string Decrypt(byte[] cipherText, string key)
     {
+        ValidateInputs(cipherText, key);
         var iv = cipherText.Take(IvSize).ToArray();
         var encrypted = cipherText.Skip(IvSize).ToArray();
 
@@ -58,5 +60,29 @@ public static class Aes256
         using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
         using var srDecrypt = new StreamReader(csDecrypt);
         return srDecrypt.ReadToEnd();
+    }
+    
+    private static void ValidateInputs(string text, string key)
+    {
+        if (string.IsNullOrEmpty(text))
+            throw new ArgumentException("Text cannot be null or empty.");
+
+        if (string.IsNullOrEmpty(key) || !IsBase64String(key) || Convert.FromBase64String(key).Length != 32)
+            throw new ArgumentException("Invalid key.");
+    }
+
+    private static void ValidateInputs(byte[] cipherText, string key)
+    {
+        if (cipherText == null || cipherText.Length < IvSize)
+            throw new ArgumentException("Invalid cipher text.");
+
+        if (string.IsNullOrEmpty(key) || !IsBase64String(key) || Convert.FromBase64String(key).Length != 32)
+            throw new ArgumentException("Invalid key.");
+    }
+
+    private static bool IsBase64String(string s)
+    {
+        var buffer = new Span<byte>(new byte[s.Length]);
+        return Convert.TryFromBase64String(s, buffer, out _);
     }
 }

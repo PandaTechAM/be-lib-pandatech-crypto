@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Pandatech.Cryptos;
+namespace Pandatech.Crypto;
 
 public static class Random
 {

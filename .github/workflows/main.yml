@@ -21,13 +21,13 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Build
-        run: dotnet build ./Pandatech.Crypto
+        run: dotnet build ./Pandatech.Crypto/Pandatech.Crypto.csproj
 
       - name: Test
-        run: dotnet test ./Pandatech.Crypto --collect:"XPlat Code Coverage"
+        run: dotnet test ./Pandatech.Crypto/Pandatech.Crypto.csproj --collect:"XPlat Code Coverage"
 
       - name: Pack
-        run: dotnet pack ./Pandatech.Crypto --output nupkgs
+        run: dotnet pack ./Pandatech.Crypto/Pandatech.Crypto.csproj --output nupkgs
 
       - name: Publish
         run: dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
