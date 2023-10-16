@@ -4,14 +4,14 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
         <Title>Pandatech.Crypto</Title>
         <Authors>Pandatech</Authors>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Refactoring project</PackageReleaseNotes>
+        <PackageReleaseNotes>Refactored RandomPassword class logic</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

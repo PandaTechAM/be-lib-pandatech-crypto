@@ -10,8 +10,18 @@ public static class RandomPassword
     public static string Generate(int length, bool includeUppercase, bool includeLowercase, bool includeDigits,
         bool includeSpecialChars)
     {
-        if (length <= 0)
-            throw new ArgumentException("Password length must be greater than zero.");
+        var typesCount = (includeUppercase ? 1 : 0) + (includeLowercase ? 1 : 0) + (includeDigits ? 1 : 0) +
+                         (includeSpecialChars ? 1 : 0);
+
+        if (typesCount == 0)
+        {
+            throw new ArgumentException("At least one character set must be selected.");
+        }
+
+        if (length < typesCount)
+        {
+            throw new ArgumentException($"Password length must be at least {typesCount}.");
+        }
 
         var charSet = "";
         if (includeUppercase)
@@ -23,18 +33,56 @@ public static class RandomPassword
         if (includeSpecialChars)
             charSet += SpecialChars;
 
-        if (string.IsNullOrEmpty(charSet))
-            throw new ArgumentException("At least one character set must be selected.");
 
-        var buffer = Random.GenerateBytes(length);
+        var buffer = Random.GenerateBytes(length - typesCount);
+        var requiredBuffer = Random.GenerateBytes(typesCount);
 
         var password = new char[length];
-        for (var i = 0; i < length; i++)
+        for (var i = 0; i < buffer.Length; i++)
         {
             var index = buffer[i] % charSet.Length;
             password[i] = charSet[index];
         }
 
-        return new string(password);
+        var bufferIndex = 0;
+
+        if (includeUppercase)
+        {
+            var index = requiredBuffer[bufferIndex++] % UppercaseChars.Length;
+            password[buffer.Length + bufferIndex - 1] = UppercaseChars[index];
+        }
+
+        if (includeLowercase)
+        {
+            var index = requiredBuffer[bufferIndex++] % LowercaseChars.Length;
+            password[buffer.Length + bufferIndex - 1] = LowercaseChars[index];
+        }
+
+        if (includeDigits)
+        {
+            var index = requiredBuffer[bufferIndex++] % DigitChars.Length;
+            password[buffer.Length + bufferIndex - 1] = DigitChars[index];
+        }
+
+        if (includeSpecialChars)
+        {
+            var index = requiredBuffer[bufferIndex++] % SpecialChars.Length;
+            password[buffer.Length + bufferIndex - 1] = SpecialChars[index];
+        }
+
+        return ShuffleString(password);
+    }
+
+    private static string ShuffleString(char[] array)
+    {
+        var n = array.Length;
+        var randomBuffer = Random.GenerateBytes(n);
+
+        for (var i = n - 1; i >= 1; i--)
+        {
+            var j = randomBuffer[i] % (i + 1);
+            (array[i], array[j]) = (array[j], array[i]);
+        }
+        return new string(array);
     }
 }
