@@ -49,12 +49,12 @@ public static class Argon2Id
         return ConstantTimeComparison(hash, newHash);
     }
 
-    private static bool ConstantTimeComparison(byte[] a, byte[] b)
+    private static bool ConstantTimeComparison(IReadOnlyList<byte> a, IReadOnlyList<byte> b)
     {
-        var diff = (uint)a.Length ^ (uint)b.Length;
-        for (var i = 0; i < a.Length && i < b.Length; i++)
+        var diff = (ushort)a.Count ^ (ushort)b.Count;
+        for (var i = 0; i < a.Count && i < b.Count; i++)
         {
-            diff |= (uint)(a[i] ^ b[i]);
+            diff |= (ushort)(a[i] ^ b[i]);
         }
 
         return diff == 0;
