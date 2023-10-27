@@ -61,7 +61,31 @@ public static class Aes256
         using var srDecrypt = new StreamReader(csDecrypt);
         return srDecrypt.ReadToEnd();
     }
-    
+
+    public static byte[] EncryptWithHash(string plainText)
+    {
+        return EncryptWithHash(plainText, Key);
+    }
+
+    public static byte[] EncryptWithHash(string plainText, string key)
+    {
+        var encryptedBytes = Encrypt(plainText, key);
+        var hashBytes = Sha3.Hash(plainText);
+        return encryptedBytes.Concat(hashBytes).ToArray();
+    }
+
+    public static string DecryptIgnoringHash(byte[] cipherTextWithHash)
+    {
+        return DecryptIgnoringHash(cipherTextWithHash, Key);
+    }
+
+    public static string DecryptIgnoringHash(byte[] cipherTextWithHash, string key)
+    {
+        const int hashSize = 64;
+        var cipherText = cipherTextWithHash.Take(cipherTextWithHash.Length - hashSize).ToArray();
+        return Decrypt(cipherText, key);
+    }
+
     private static void ValidateInputs(string text, string key)
     {
         if (string.IsNullOrEmpty(text))
