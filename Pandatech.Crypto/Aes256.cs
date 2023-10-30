@@ -7,6 +7,7 @@ public static class Aes256
     private static readonly string Key = Environment.GetEnvironmentVariable("AES_KEY")!;
     private const int KeySize = 256;
     private const int IvSize = 16;
+    private const int HashSize = 64;
 
     public static byte[] Encrypt(string plainText)
     {
@@ -80,8 +81,7 @@ public static class Aes256
 
     public static string DecryptIgnoringHash(byte[] cipherTextWithHash, string key)
     {
-        const int hashSize = 64;
-        var cipherText = cipherTextWithHash.Take(cipherTextWithHash.Length - hashSize).ToArray();
+        var cipherText = cipherTextWithHash.Take(cipherTextWithHash.Length - HashSize).ToArray();
         return Decrypt(cipherText, key);
     }
 
