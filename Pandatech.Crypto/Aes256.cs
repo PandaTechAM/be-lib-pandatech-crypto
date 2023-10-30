@@ -20,7 +20,6 @@ public static class Aes256
         aesAlg.KeySize = KeySize;
         aesAlg.Padding = PaddingMode.PKCS7;
         aesAlg.Key = Convert.FromBase64String(key);
-        aesAlg.GenerateIV();
 
         var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
 
