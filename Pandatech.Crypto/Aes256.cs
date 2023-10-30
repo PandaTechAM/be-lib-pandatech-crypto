@@ -71,17 +71,17 @@ public static class Aes256
     {
         var encryptedBytes = Encrypt(plainText, key);
         var hashBytes = Sha3.Hash(plainText);
-        return encryptedBytes.Concat(hashBytes).ToArray();
+        return hashBytes.Concat(encryptedBytes).ToArray();
     }
 
-    public static string DecryptIgnoringHash(byte[] cipherTextWithHash)
+    public static string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash)
     {
         return DecryptIgnoringHash(cipherTextWithHash, Key);
     }
 
-    public static string DecryptIgnoringHash(byte[] cipherTextWithHash, string key)
+    public static string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash, string key)
     {
-        var cipherText = cipherTextWithHash.Take(cipherTextWithHash.Length - HashSize).ToArray();
+        var cipherText = cipherTextWithHash.Skip(HashSize).ToArray();
         return Decrypt(cipherText, key);
     }
 
