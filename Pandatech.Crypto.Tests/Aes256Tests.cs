@@ -3,16 +3,6 @@ namespace Pandatech.Crypto.Tests;
 public class Aes256Tests
 {
     [Fact]
-    public void Generate_ShouldReturnByteArray()
-    {
-        const int length = 16;
-        var randomBytes = Random.GenerateBytes(length);
-
-        Assert.NotNull(randomBytes);
-        Assert.Equal(length, randomBytes.Length);
-    }
-
-    [Fact]
     public void EncryptDecryptWithParameter_ShouldReturnOriginalString()
     {
         var aes256 = new Aes256(new Aes256Options());
