@@ -11,6 +11,11 @@ public class Argon2Id
         _options = options;
     }
 
+    public Argon2Id()
+    {
+        _options = new Argon2IdOptions();
+    }
+
     private const int SaltSize = 16;
 
 
