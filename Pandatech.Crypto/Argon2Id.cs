@@ -6,11 +6,11 @@ namespace Pandatech.Crypto;
 public class Argon2Id
 {
     private readonly Argon2IdOptions _options;
+
     public Argon2Id(Argon2IdOptions options)
     {
         _options = options;
     }
-
     public Argon2Id()
     {
         _options = new Argon2IdOptions();
@@ -25,6 +25,7 @@ public class Argon2Id
         {
             throw new ArgumentException("Password cannot be null or empty.", nameof(password));
         }
+
         var salt = Random.GenerateBytes(_options.SaltSize);
         return HashPassword(password, salt);
     }
@@ -50,7 +51,7 @@ public class Argon2Id
         {
             throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(hash));
         }
-        
+
         var salt = hash.Take(_options.SaltSize).ToArray();
 
         var newHash = HashPassword(password, salt);
