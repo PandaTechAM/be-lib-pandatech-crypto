@@ -2,20 +2,21 @@
 
 namespace Pandatech.Crypto;
 
-public static class Aes256
+public class Aes256
 {
-    private static readonly string Key = Environment.GetEnvironmentVariable("AES_KEY")!;
+    private readonly Aes256Options _options;
     private const int KeySize = 256;
     private const int IvSize = 16;
     private const int HashSize = 64;
 
-    public static byte[] Encrypt(string plainText)
+    public Aes256(Aes256Options options)
     {
-        return Encrypt(plainText, Key);
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public static byte[] Encrypt(string plainText, string key)
+    public byte[] Encrypt(string plainText, string? key = null)
     {
+        key ??= _options.Key;
         ValidateInputs(plainText, key);
         using var aesAlg = Aes.Create();
         aesAlg.KeySize = KeySize;
@@ -37,13 +38,9 @@ public static class Aes256
         return result;
     }
 
-    public static string Decrypt(byte[] cipherText)
+    public string Decrypt(byte[] cipherText, string? key = null)
     {
-        return Decrypt(cipherText, Key);
-    }
-
-    public static string Decrypt(byte[] cipherText, string key)
-    {
+        key ??= _options.Key;
         ValidateInputs(cipherText, key);
         var iv = cipherText.Take(IvSize).ToArray();
         var encrypted = cipherText.Skip(IvSize).ToArray();
@@ -62,25 +59,17 @@ public static class Aes256
         return srDecrypt.ReadToEnd();
     }
 
-    public static byte[] EncryptWithHash(string plainText)
+    public byte[] EncryptWithHash(string plainText, string? key = null)
     {
-        return EncryptWithHash(plainText, Key);
-    }
-
-    public static byte[] EncryptWithHash(string plainText, string key)
-    {
+        key ??= _options.Key;
         var encryptedBytes = Encrypt(plainText, key);
         var hashBytes = Sha3.Hash(plainText);
         return hashBytes.Concat(encryptedBytes).ToArray();
     }
 
-    public static string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash)
+    public string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash, string? key = null)
     {
-        return DecryptIgnoringHash(cipherTextWithHash, Key);
-    }
-
-    public static string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash, string key)
-    {
+        key ??= _options.Key;
         var cipherText = cipherTextWithHash.Skip(HashSize).ToArray();
         return Decrypt(cipherText, key);
     }

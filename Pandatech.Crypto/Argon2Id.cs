@@ -3,32 +3,35 @@ using Konscious.Security.Cryptography;
 
 namespace Pandatech.Crypto;
 
-public static class Argon2Id
+public class Argon2Id
 {
+    private readonly Argon2IdOptions _options;
+    public Argon2Id(Argon2IdOptions options)
+    {
+        _options = options;
+    }
+
     private const int SaltSize = 16;
-    private const int DegreeOfParallelism = 8;
-    private const int Iterations = 5;
-    private const int MemorySize = 128 * 1024; // 128 MB
 
 
-    public static byte[] HashPassword(string password)
+    public byte[] HashPassword(string password)
     {
         if (string.IsNullOrEmpty(password))
         {
             throw new ArgumentException("Password cannot be null or empty.", nameof(password));
         }
-        var salt = Random.GenerateBytes(SaltSize);
+        var salt = Random.GenerateBytes(_options.SaltSize);
         return HashPassword(password, salt);
     }
 
-    private static byte[] HashPassword(string password, byte[] salt)
+    private byte[] HashPassword(string password, byte[] salt)
     {
         using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
         {
             Salt = salt,
-            DegreeOfParallelism = DegreeOfParallelism,
-            Iterations = Iterations,
-            MemorySize = MemorySize
+            DegreeOfParallelism = _options.DegreeOfParallelism,
+            Iterations = _options.Iterations,
+            MemorySize = _options.MemorySize
         };
 
         var result = salt.Concat(argon2.GetBytes(32)).ToArray();
@@ -36,14 +39,14 @@ public static class Argon2Id
         return result;
     }
 
-    public static bool VerifyHash(string password, byte[] hash)
+    public bool VerifyHash(string password, byte[] hash)
     {
-        if (hash == null || hash.Length <= SaltSize)
+        if (hash == null || hash.Length <= _options.SaltSize)
         {
             throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(hash));
         }
         
-        var salt = hash.Take(SaltSize).ToArray();
+        var salt = hash.Take(_options.SaltSize).ToArray();
 
         var newHash = HashPassword(password, salt);
         return ConstantTimeComparison(hash, newHash);
