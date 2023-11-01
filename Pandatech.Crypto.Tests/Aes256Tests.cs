@@ -9,8 +9,8 @@ public class Aes256Tests
 
         var key = Random.GenerateAes256KeyString();
         const string original = "MySensitiveData";
-        var encrypted = aes256.Encrypt(original, key);
-        var decrypted = aes256.Decrypt(encrypted, key);
+        var encrypted = aes256.Encrypt(original, key, false);
+        var decrypted = aes256.Decrypt(encrypted, key, false);
 
         Assert.Equal(original, decrypted);
     }
@@ -22,8 +22,8 @@ public class Aes256Tests
         var aes256 = new Aes256(aes256Options);
         Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
-        var encrypted = aes256.Encrypt(original);
-        var decrypted = aes256.Decrypt(encrypted);
+        var encrypted = aes256.Encrypt(original,false);
+        var decrypted = aes256.Decrypt(encrypted, false);
 
         Assert.Equal(original, decrypted);
     }
@@ -34,7 +34,7 @@ public class Aes256Tests
         var aes256 = new Aes256(new Aes256Options());
         var key = Random.GenerateAes256KeyString();
         const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.EncryptWithHash(original, key);
+        var encryptedWithHash = aes256.Encrypt(original, key);
 
         Assert.NotNull(encryptedWithHash);
         Assert.True(encryptedWithHash.Length > original.Length);
@@ -48,7 +48,7 @@ public class Aes256Tests
         var aes256 = new Aes256(aes256Options);
         Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.EncryptWithHash(original);
+        var encryptedWithHash = aes256.Encrypt(original);
 
         Assert.NotNull(encryptedWithHash);
         Assert.True(encryptedWithHash.Length > original.Length);
@@ -61,8 +61,8 @@ public class Aes256Tests
         var aes256 = new Aes256(new Aes256Options());
         var key = Random.GenerateAes256KeyString();
         const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.EncryptWithHash(original, key);
-        var decrypted = aes256.DecryptIgnoringHash(encryptedWithHash, key);
+        var encryptedWithHash = aes256.Encrypt(original, key);
+        var decrypted = aes256.Decrypt(encryptedWithHash, key);
 
         Assert.Equal(original, decrypted);
     }
@@ -74,8 +74,8 @@ public class Aes256Tests
         var aes256 = new Aes256(aes256Options);
         Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.EncryptWithHash(original);
-        var decrypted = aes256.DecryptIgnoringHash(encryptedWithHash);
+        var encryptedWithHash = aes256.Encrypt(original);
+        var decrypted = aes256.Decrypt(encryptedWithHash);
 
         Assert.Equal(original, decrypted);
     }
@@ -87,7 +87,7 @@ public class Aes256Tests
         const string invalidKey = "InvalidKey";
         var invalidData = new byte[50];
 
-        Assert.Throws<ArgumentException>(() => aes256.DecryptIgnoringHash(invalidData, invalidKey));
+        Assert.Throws<ArgumentException>(() => aes256.Decrypt(invalidData, invalidKey));
     }
 
     [Fact]
@@ -129,6 +129,6 @@ public class Aes256Tests
         var aes256 = new Aes256(new Aes256Options());
         var key = Random.GenerateAes256KeyString();
 
-        Assert.Throws<ArgumentException>(() => aes256.Decrypt(null!, key));
+        Assert.Throws<ArgumentNullException>(() => aes256.Decrypt(null!, key));
     }
 }

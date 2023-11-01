@@ -38,7 +38,7 @@ builder.services.AddPandatechCryptoAes256(options =>
   options.Key = "YourAes256KeyHere"; // Make sure to use a secure key
 });
 
-// For Argon2Id
+// For Argon2Id overriding default configurations
   builder.services.AddPandatechCryptoArgon2Id(options =>
 {
    options.SaltSize = 16;
@@ -51,24 +51,21 @@ builder.services.AddPandatechCryptoAes256(options =>
 #### Immutable Configurations
 1. **IV**: A random IV is generated for each Encryption, enhancing security.
 2. **PaddingMode**: PKCS7
-#### Methods
-1. **Encrypt(string plainText)**: Encrypts a plain text using options.
-2. **Encrypt(string plainText, string key)**: Encrypts a plain text using a given key.
-3. **Decrypt(byte[] cipherText)**: Decrypts to plain text using options.
-4. **Decrypt(byte[] cipherText, string key)**: Decrypts to plain text using a given key.
-5. **EncryptWithHash(string plainText)**: Encrypts and appends SHA-3 hash using options.
-6. **DecryptIgnoringHash(byte[] cipherTextWithHash)**: Decrypts using options while ignoring SHA-3 hash.
-7. **EncryptWithHash(string plainText, string key)**: Encrypts and appends SHA-3 hash using a given key.
-8. **DecryptIgnoringHash(byte[] cipherTextWithHash, string key)**: Decrypts using a given key while ignoring SHA-3 hash.
-
+#### Encryption/Decryption methods with hashing
 ```csharp
-// Example for basic encryption and decryption
-var encryptedData = _aes256.Encrypt("PlainText");
-var decryptedData = _aes256.Decrypt(encryptedData);
-
-// Example for encryption and decryption with hash
-var encryptedWithHash = _aes256.EncryptWithHash("PlainText");
-var decryptedIgnoringHash = _aes256.DecryptIgnoringHash(encryptedWithHash);
+byte[] cipherText = aes256.Encrypt("your-plaintext");
+string plainText = aes256.Decrypt(cipherText);
+```
+#### Encryption/Decryption methods without hashing
+```csharp
+byte[] cipherText = aes256.Encrypt("your-plaintext", false);
+string plainText = aes256.Decrypt(cipherText, false);
+```
+#### Encryption/Decryption methods with custom key (overriding options for one time)
+```csharp
+string customKey = "your-custom-base64-encoded-key";
+byte[] cipherText = aes256.Encrypt("your-plaintext", customKey);
+string plainText = aes256.Decrypt(cipherText, customKey);
 ```
 ### 2. Argon2id Class
 #### Default Configurations

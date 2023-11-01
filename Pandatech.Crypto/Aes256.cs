@@ -14,7 +14,25 @@ public class Aes256
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public byte[] Encrypt(string plainText, string? key = null)
+    public byte[] Encrypt(string plainText, bool addHashToBytes = true)
+    {
+        return addHashToBytes ? EncryptWithHash(plainText) : Encrypt(plainText);
+    }
+    public byte[] Encrypt(string plainText, string key, bool addHashToBytes = true)
+    {
+        return addHashToBytes ? EncryptWithHash(plainText, key) : Encrypt(plainText, key);
+    }
+    public string Decrypt(byte[] cipherText, bool includesHash = true)
+    {
+        return includesHash ? DecryptIgnoringHash(cipherText) : Decrypt(cipherText);
+    }
+    
+    public string Decrypt(byte[] cipherText, string key, bool bytesIncludeHash = true)
+    {
+        return bytesIncludeHash ? DecryptIgnoringHash(cipherText, key) : Decrypt(cipherText, key);
+    }
+
+    private byte[] Encrypt(string plainText, string? key)
     {
         key ??= _options.Key;
         ValidateInputs(plainText, key);
@@ -37,8 +55,9 @@ public class Aes256
         var result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
         return result;
     }
+   
 
-    public string Decrypt(byte[] cipherText, string? key = null)
+    private string Decrypt(byte[] cipherText, string? key)
     {
         key ??= _options.Key;
         ValidateInputs(cipherText, key);
@@ -59,7 +78,7 @@ public class Aes256
         return srDecrypt.ReadToEnd();
     }
 
-    public byte[] EncryptWithHash(string plainText, string? key = null)
+    private byte[] EncryptWithHash(string plainText, string? key = null)
     {
         key ??= _options.Key;
         var encryptedBytes = Encrypt(plainText, key);
@@ -67,7 +86,7 @@ public class Aes256
         return hashBytes.Concat(encryptedBytes).ToArray();
     }
 
-    public string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash, string? key = null)
+    private string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash, string? key = null)
     {
         key ??= _options.Key;
         var cipherText = cipherTextWithHash.Skip(HashSize).ToArray();
