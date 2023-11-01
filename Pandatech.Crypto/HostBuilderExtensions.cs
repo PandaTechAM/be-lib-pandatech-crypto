@@ -19,4 +19,12 @@ public static class HostBuilderExtensions
         services.AddSingleton(options);
         services.AddSingleton<Argon2Id>();
     }
+    
+    public static void AddPandatechCryptoArgon2Id(this IServiceCollection services)
+    {
+        var options = new Argon2IdOptions();
+        services.AddSingleton(options);
+        services.AddSingleton<Argon2Id>();
+
+    }
 }
