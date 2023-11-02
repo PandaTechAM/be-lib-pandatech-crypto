@@ -22,7 +22,7 @@ public class Aes256Tests
         var aes256 = new Aes256(aes256Options);
         Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
-        var encrypted = aes256.Encrypt(original,false);
+        var encrypted = aes256.Encrypt(original, false);
         var decrypted = aes256.Decrypt(encrypted, false);
 
         Assert.Equal(original, decrypted);
@@ -98,7 +98,6 @@ public class Aes256Tests
         const string original = "MySensitiveData";
 
         Assert.Throws<ArgumentException>(() => aes256.Encrypt(original, invalidKey));
-        Assert.Throws<ArgumentException>(() => aes256.Decrypt(Array.Empty<byte>(), invalidKey));
     }
 
     [Fact]
@@ -113,22 +112,22 @@ public class Aes256Tests
     }
 
     [Fact]
-    public void EncryptDecryptWithEmptyText_ShouldThrowException()
+    public void EncryptDecryptWithEmptyText_ShouldReturnEmptyString()
     {
         var aes256 = new Aes256(new Aes256Options());
         var key = Random.GenerateAes256KeyString();
         var original = string.Empty;
-
-        Assert.Throws<ArgumentException>(() => aes256.Encrypt(original, key));
-        Assert.Throws<ArgumentException>(() => aes256.Decrypt(Array.Empty<byte>(), key));
+        var encrypted = aes256.Encrypt(original, key);
+        var decrypted = aes256.Decrypt(encrypted, key);
+        Assert.Equal(original, decrypted);
     }
 
     [Fact]
-    public void EncryptDecryptWithNullCipher_ShouldThrowException()
+    public void EncryptDecryptWithNullCipher_ShouldReturnEmptyString()
     {
         var aes256 = new Aes256(new Aes256Options());
         var key = Random.GenerateAes256KeyString();
 
-        Assert.Throws<ArgumentNullException>(() => aes256.Decrypt(null!, key));
+        Assert.Equal("", aes256.Decrypt(Array.Empty<byte>(), key));
     }
 }

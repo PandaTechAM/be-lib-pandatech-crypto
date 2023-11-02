@@ -14,28 +14,37 @@ public class Aes256
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public byte[] Encrypt(string plainText, bool addHashToBytes = true)
+    public byte[] Encrypt(string? plainText, bool addHashToBytes = true)
     {
+        if (string.IsNullOrEmpty(plainText)) return Array.Empty<byte>();
         return addHashToBytes ? EncryptWithHash(plainText) : Encrypt(plainText);
     }
-    public byte[] Encrypt(string plainText, string key, bool addHashToBytes = true)
+
+    public byte[] Encrypt(string? plainText, string key, bool addHashToBytes = true)
     {
+        ValidateKey(key);
+        if (string.IsNullOrEmpty(plainText)) return Array.Empty<byte>();
         return addHashToBytes ? EncryptWithHash(plainText, key) : Encrypt(plainText, key);
     }
-    public string Decrypt(byte[] cipherText, bool includesHash = true)
+
+    public string? Decrypt(byte[] cipherText, bool includesHash = true)
     {
+        if (cipherText.Length == 0) return "";
         return includesHash ? DecryptIgnoringHash(cipherText) : Decrypt(cipherText);
     }
-    
-    public string Decrypt(byte[] cipherText, string key, bool bytesIncludeHash = true)
+
+    public string? Decrypt(byte[] cipherText, string key, bool bytesIncludeHash = true)
     {
+        ValidateKey(key);
+        if (cipherText.Length == 0) return "";
         return bytesIncludeHash ? DecryptIgnoringHash(cipherText, key) : Decrypt(cipherText, key);
     }
+
 
     private byte[] Encrypt(string plainText, string? key)
     {
         key ??= _options.Key;
-        ValidateInputs(plainText, key);
+        ValidateText(plainText);
         using var aesAlg = Aes.Create();
         aesAlg.KeySize = KeySize;
         aesAlg.Padding = PaddingMode.PKCS7;
@@ -55,12 +64,12 @@ public class Aes256
         var result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
         return result;
     }
-   
+
 
     private string Decrypt(byte[] cipherText, string? key)
     {
         key ??= _options.Key;
-        ValidateInputs(cipherText, key);
+        ValidateCipherText(cipherText);
         var iv = cipherText.Take(IvSize).ToArray();
         var encrypted = cipherText.Skip(IvSize).ToArray();
 
@@ -93,22 +102,24 @@ public class Aes256
         return Decrypt(cipherText, key);
     }
 
-    private static void ValidateInputs(string text, string key)
+    private static void ValidateKey(string key)
     {
-        if (string.IsNullOrEmpty(text))
-            throw new ArgumentException("Text cannot be null or empty.");
-
         if (string.IsNullOrEmpty(key) || !IsBase64String(key) || Convert.FromBase64String(key).Length != 32)
             throw new ArgumentException("Invalid key.");
     }
 
-    private static void ValidateInputs(byte[] cipherText, string key)
+    private static void ValidateText(string text)
     {
+        if (string.IsNullOrEmpty(text) && text != null)
+            throw new ArgumentException("Text cannot be null or empty.");
+    }
+
+    private static void ValidateCipherText(byte[] cipherText)
+    {
+        if (cipherText.Length == 0) return;
+
         if (cipherText == null || cipherText.Length < IvSize)
             throw new ArgumentException("Invalid cipher text.");
-
-        if (string.IsNullOrEmpty(key) || !IsBase64String(key) || Convert.FromBase64String(key).Length != 32)
-            throw new ArgumentException("Invalid key.");
     }
 
     private static bool IsBase64String(string s)

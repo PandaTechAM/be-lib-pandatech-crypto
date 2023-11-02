@@ -11,9 +11,10 @@ public class HostBuilderTests
         var services = new ServiceCollection();
 
         // Act
+        var key = Random.GenerateAes256KeyString();
         services.AddPandatechCryptoAes256(options => 
         {
-            options.Key = "abd";
+            options.Key = key;
         });
 
         // Assert
@@ -22,7 +23,7 @@ public class HostBuilderTests
         var aes256 = serviceProvider.GetRequiredService<Aes256>();
 
         Assert.NotNull(aes256Options);
-        Assert.Equal("abd", aes256Options.Key);
+        Assert.Equal(key, aes256Options.Key);
         Assert.NotNull(aes256);
     }
     [Fact]
@@ -34,7 +35,8 @@ public class HostBuilderTests
         // Act
         services.AddPandatechCryptoAes256(options => 
         {
-            options.Key = "abd";
+            
+            options.Key = Random.GenerateAes256KeyString();
         });
     
         var serviceProvider = services.BuildServiceProvider();

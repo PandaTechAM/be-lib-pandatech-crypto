@@ -8,6 +8,7 @@ public static class HostBuilderExtensions
     {
         var options = new Aes256Options();
         configure(options);
+        ValidateKey(options.Key);
         services.AddSingleton(options);
         services.AddSingleton<Aes256>();
     }
@@ -19,11 +20,23 @@ public static class HostBuilderExtensions
         services.AddSingleton(options);
         services.AddSingleton<Argon2Id>();
     }
+    
+    private static void ValidateKey(string key)
+    {
+        if (string.IsNullOrEmpty(key) || !IsBase64String(key) || Convert.FromBase64String(key).Length != 32)
+            throw new ArgumentException("Invalid key.");
+    }
 
     public static void AddPandatechCryptoArgon2Id(this IServiceCollection services)
     {
         var options = new Argon2IdOptions();
         services.AddSingleton(options);
         services.AddSingleton<Argon2Id>();
+    }
+    
+    private static bool IsBase64String(string s)
+    {
+        var buffer = new Span<byte>(new byte[s.Length]);
+        return Convert.TryFromBase64String(s, buffer, out _);
     }
 }
