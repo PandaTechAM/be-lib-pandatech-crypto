@@ -10,18 +10,7 @@ public static class RandomPassword
     public static string Generate(int length, bool includeUppercase, bool includeLowercase, bool includeDigits,
         bool includeSpecialChars)
     {
-        var typesCount = (includeUppercase ? 1 : 0) + (includeLowercase ? 1 : 0) + (includeDigits ? 1 : 0) +
-                         (includeSpecialChars ? 1 : 0);
-
-        if (typesCount == 0)
-        {
-            throw new ArgumentException("At least one character set must be selected.");
-        }
-
-        if (length < typesCount)
-        {
-            throw new ArgumentException($"Password length must be at least {typesCount}.");
-        }
+        var typesCount = ValidateInput(length, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
 
         var charSet = "";
         if (includeUppercase)
@@ -73,6 +62,59 @@ public static class RandomPassword
         return ShuffleString(password);
     }
 
+    public static bool Validate(string password, int length, bool includeUppercase, bool includeLowercase,
+        bool includeDigits,
+        bool includeSpecialChars)
+    {
+        if (password.Length < length)
+        {
+            return false;
+        }
+
+        ValidateInput(length, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
+
+        if (includeUppercase && !password.Any(char.IsUpper))
+        {
+            return false;
+        }
+
+        if (includeLowercase && !password.Any(char.IsLower))
+        {
+            return false;
+        }
+
+        if (includeDigits && !password.Any(char.IsDigit))
+        {
+            return false;
+        }
+
+        if (includeSpecialChars && !password.Any(c => SpecialChars.Contains(c)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int ValidateInput(int length, bool includeUppercase, bool includeLowercase, bool includeDigits,
+        bool includeSpecialChars)
+    {
+        var typesCount = (includeUppercase ? 1 : 0) + (includeLowercase ? 1 : 0) + (includeDigits ? 1 : 0) +
+                         (includeSpecialChars ? 1 : 0);
+
+        if (typesCount == 0)
+        {
+            throw new ArgumentException("At least one character set must be selected.");
+        }
+
+        if (length < typesCount)
+        {
+            throw new ArgumentException($"Password length must be at least {typesCount}.");
+        }
+
+        return typesCount;
+    }
+
     private static string ShuffleString(char[] array)
     {
         var n = array.Length;
@@ -83,6 +125,7 @@ public static class RandomPassword
             var j = randomBuffer[i] % (i + 1);
             (array[i], array[j]) = (array[j], array[i]);
         }
+
         return new string(array);
     }
 }
