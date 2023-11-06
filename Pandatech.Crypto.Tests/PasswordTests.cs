@@ -1,6 +1,6 @@
 ﻿namespace Pandatech.Crypto.Tests;
 
-public class RandomPasswordTests
+public class PasswordTests
 {
     [Theory]
     [InlineData(7, true, true, true, true)]
@@ -14,7 +14,7 @@ public class RandomPasswordTests
         bool includeSpecialChars)
     {
         // Generate a random password
-        var password = RandomPassword.Generate(length, includeUppercase, includeLowercase, includeDigits,
+        var password = Password.GenerateRandom(length, includeUppercase, includeLowercase, includeDigits,
             includeSpecialChars);
 
         // Check if the password length is correct
@@ -34,8 +34,8 @@ public class RandomPasswordTests
     [Fact]
     public void Generate_ShouldReturnDifferentPasswords()
     {
-        var password1 = RandomPassword.Generate(12, true, true, true, true);
-        var password2 = RandomPassword.Generate(12, true, true, true, true);
+        var password1 = Password.GenerateRandom(12, true, true, true, true);
+        var password2 = Password.GenerateRandom(12, true, true, true, true);
 
         Assert.NotEqual(password1, password2);
     }
@@ -56,9 +56,9 @@ public class RandomPasswordTests
         bool includeSpecialChars)
     {
         // Generate a random password
-        var password = RandomPassword.Generate(length, includeUppercase, includeLowercase, includeDigits,
+        var password = Password.GenerateRandom(length, includeUppercase, includeLowercase, includeDigits,
             includeSpecialChars);
-        Assert.True(RandomPassword.Validate(password, length, includeUppercase, includeLowercase, includeDigits,
+        Assert.True(Password.Validate(password, length, includeUppercase, includeLowercase, includeDigits,
             includeSpecialChars));
     }
     [Theory]
@@ -76,9 +76,9 @@ public class RandomPasswordTests
         bool includeSpecialChars)
     {
         // Generate a random password
-        var password = RandomPassword.Generate(length, includeUppercase, includeLowercase, includeDigits,
+        var password = Password.GenerateRandom(length, includeUppercase, includeLowercase, includeDigits,
             includeSpecialChars);
-        Assert.False(RandomPassword.Validate(password, length, !includeUppercase, !includeLowercase, !includeDigits,
+        Assert.False(Password.Validate(password, length, !includeUppercase, !includeLowercase, !includeDigits,
             !includeSpecialChars));
     }
 }

@@ -7,7 +7,7 @@ public class Argon2IdTests
     {
         var argon2Id = new Argon2Id();
         var argon2Id2 = new Argon2Id(new Argon2IdOptions { SaltSize = 16, MemorySize = 128, DegreeOfParallelism = 1, Iterations = 1 });
-        var password = RandomPassword.Generate(32, true, true, true, true);
+        var password = Password.GenerateRandom(32, true, true, true, true);
         var hash = argon2Id.HashPassword(password);
         Assert.False(argon2Id2.VerifyHash(password, hash));
     }
@@ -17,7 +17,7 @@ public class Argon2IdTests
     {
         var argon2Id = new Argon2Id();
 
-        var password = RandomPassword.Generate(32, true, true, true, true);
+        var password = Password.GenerateRandom(32, true, true, true, true);
         var hash = argon2Id.HashPassword(password);
 
         Assert.True(argon2Id.VerifyHash(password, hash));
@@ -27,7 +27,7 @@ public class Argon2IdTests
     public void HashVerify_InvalidPassword_ShouldBeInvalid()
     {
         var argon2Id = new Argon2Id();
-        var password = RandomPassword.Generate(32, true, true, true, true);
+        var password = Password.GenerateRandom(32, true, true, true, true);
         var hash = argon2Id.HashPassword(password);
         Assert.False(argon2Id.VerifyHash("SomePassword", hash));
     }
@@ -36,8 +36,8 @@ public class Argon2IdTests
     public void DifferentPasswords_ShouldHaveDifferentHashes()
     {
         var argon2Id = new Argon2Id();
-        var password1 = RandomPassword.Generate(32, true, true, true, true);
-        var password2 = RandomPassword.Generate(32, true, true, true, true);
+        var password1 = Password.GenerateRandom(32, true, true, true, true);
+        var password2 = Password.GenerateRandom(32, true, true, true, true);
         var hash1 = argon2Id.HashPassword(password1);
         var hash2 = argon2Id.HashPassword(password2);
 

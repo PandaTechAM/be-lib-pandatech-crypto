@@ -111,7 +111,7 @@ var randomBytes = Random.GenerateBytes(16);
 var aesKey = Random.GenerateAes256KeyString();
 ```
 
-### 4. RandomPassword Class
+### 4. Password Class
 
 ```csharp
 var includeUppercase = true;
@@ -120,10 +120,10 @@ var includeDigits = true;
 var includeSpecialChars = true;
 
 //Method for generating random password
-string password = RandomPassword.Generate(16, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
+string password = Password.GenerateRandom(16, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
 
 //Method for validation of password
-bool isValid = RandomPassword.Validate(password, 16, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
+bool isValid = Password.Validate(password, 16, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
 ```
 
 ### 5. Sha3 Class

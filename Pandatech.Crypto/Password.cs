@@ -1,13 +1,13 @@
 ﻿namespace Pandatech.Crypto;
 
-public static class RandomPassword
+public static class Password
 {
     private const string UppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private const string LowercaseChars = "abcdefghijklmnopqrstuvwxyz";
     private const string DigitChars = "0123456789";
     private const string SpecialChars = "!@#$%^&*()-_=+[]{}|;:'\",.<>?";
 
-    public static string Generate(int length, bool includeUppercase, bool includeLowercase, bool includeDigits,
+    public static string GenerateRandom(int length, bool includeUppercase, bool includeLowercase, bool includeDigits,
         bool includeSpecialChars)
     {
         var typesCount = ValidateInput(length, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
