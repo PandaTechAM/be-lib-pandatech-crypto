@@ -4,7 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>2.1.7</Version>
+        <Version>2.1.8</Version>
         <Title>Pandatech.Crypto</Title>
         <Authors>Pandatech</Authors>
         <PackageIcon>pandatech.png</PackageIcon>
