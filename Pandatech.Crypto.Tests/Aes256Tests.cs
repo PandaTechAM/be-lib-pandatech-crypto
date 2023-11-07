@@ -130,4 +130,19 @@ public class Aes256Tests
 
         Assert.Equal("", aes256.Decrypt(Array.Empty<byte>(), key));
     }
+    
+    [Fact]
+    public void GenerateAes256KeyIsValidInLoop()
+    {
+        for (var i = 0; i < 1_000_000; i++)
+        {
+            var aes256 = new Aes256(new Aes256Options()
+            {
+                Key = Random.GenerateAes256KeyString()
+            });
+            var encrypt = aes256.Encrypt("MySensitiveData");
+            var decrypt = aes256.Decrypt(encrypt);
+            Assert.Equal("MySensitiveData", decrypt);
+        }
+    }
 }
