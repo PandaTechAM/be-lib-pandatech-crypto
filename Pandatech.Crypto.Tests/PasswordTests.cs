@@ -47,7 +47,6 @@ public class PasswordTests
     [InlineData(13, true, true, false, false)]
     [InlineData(25, true, true, true, false)]
     [InlineData(35, true, true, true, true)]
-
     public void ValidationTestForGeneratedPasswords(
         int length,
         bool includeUppercase,
@@ -61,6 +60,7 @@ public class PasswordTests
         Assert.True(Password.Validate(password, length, includeUppercase, includeLowercase, includeDigits,
             includeSpecialChars));
     }
+
     [Theory]
     [InlineData(7, true, false, true, true)]
     [InlineData(4, false, true, false, false)]
@@ -80,5 +80,12 @@ public class PasswordTests
             includeSpecialChars);
         Assert.False(Password.Validate(password, length, !includeUppercase, !includeLowercase, !includeDigits,
             !includeSpecialChars));
+    }
+
+    [Fact]
+    public void PasswordValidationTests()
+    {
+        var password1 = "Qwerty123!";
+        Assert.True(Password.Validate(password1, 8, false, false, false, false));
     }
 }
