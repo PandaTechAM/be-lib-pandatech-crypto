@@ -62,33 +62,30 @@ public static class Password
         return ShuffleString(password);
     }
 
-    public static bool Validate(string password, int length, bool includeUppercase, bool includeLowercase,
-        bool includeDigits,
-        bool includeSpecialChars)
+    public static bool Validate(string password, int minLength, bool requireUppercase, bool requireLowercase,
+        bool requireDigits, bool requireSpecialChars)
     {
-        if (password.Length < length)
+        if (password.Length < minLength)
         {
             return false;
         }
 
-        ValidateInput(length, includeUppercase, includeLowercase, includeDigits, includeSpecialChars);
-
-        if (includeUppercase && !password.Any(char.IsUpper))
+        if (requireUppercase && !password.Any(char.IsUpper))
         {
             return false;
         }
 
-        if (includeLowercase && !password.Any(char.IsLower))
+        if (requireLowercase && !password.Any(char.IsLower))
         {
             return false;
         }
 
-        if (includeDigits && !password.Any(char.IsDigit))
+        if (requireDigits && !password.Any(char.IsDigit))
         {
             return false;
         }
 
-        if (includeSpecialChars && !password.Any(c => SpecialChars.Contains(c)))
+        if (requireSpecialChars && !password.Any(c => SpecialChars.Contains(c)))
         {
             return false;
         }

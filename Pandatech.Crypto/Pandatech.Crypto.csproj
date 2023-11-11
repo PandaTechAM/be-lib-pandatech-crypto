@@ -11,7 +11,7 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Changed RandomPassword to Password</PackageReleaseNotes>
+        <PackageReleaseNotes>Validate Password bug fix</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
