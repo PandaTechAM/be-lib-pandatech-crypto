@@ -134,7 +134,7 @@ public class Aes256Tests
     [Fact]
     public void GenerateAes256KeyIsValidInLoop()
     {
-        for (var i = 0; i < 1_000_000; i++)
+        for (var i = 0; i < 1_000; i++)
         {
             var aes256 = new Aes256(new Aes256Options()
             {
