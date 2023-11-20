@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using Org.BouncyCastle.Crypto.Digests;
 
 namespace Pandatech.Crypto;
