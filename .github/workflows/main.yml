@@ -33,7 +33,7 @@ jobs:
         run: dotnet test ${{ env.PROJECT_PATH }} --collect:"XPlat Code Coverage"
 
       - name: Pack
-        run: dotnet pack ${{ env.PROJECT_PATH }} --output ${{ env.OUTPUT_DIR }}
+        run: dotnet pack ${{ env.PROJECT_PATH }} --output ${{ env.OUTPUT_DIR }} 
 
       - name: Publish
         run: dotnet nuget push ${{ env.OUTPUT_DIR }}/*.nupkg -k ${{ env.NUGET_API_KEY }} -s ${{ env.NUGET_SOURCE }}
