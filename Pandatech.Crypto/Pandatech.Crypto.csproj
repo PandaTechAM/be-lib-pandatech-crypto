@@ -4,14 +4,14 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>2.2.0</Version>
+        <Version>2.2.1</Version>
         <Title>Pandatech.Crypto</Title>
         <Authors>Pandatech</Authors>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>.net 8.0 update</PackageReleaseNotes>
+        <PackageReleaseNotes>Nullable byte in aes256 decrypt</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

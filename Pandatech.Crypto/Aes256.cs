@@ -27,13 +27,13 @@ public class Aes256
         return addHashToBytes ? EncryptWithHash(plainText, key) : Encrypt(plainText, key);
     }
 
-    public string? Decrypt(byte[] cipherText, bool includesHash = true)
+    public string? Decrypt(byte[]? cipherText, bool includesHash = true)
     {
-        if (cipherText.Length == 0) return "";
+        if (cipherText == null || cipherText.Length == 0) return "";
         return includesHash ? DecryptIgnoringHash(cipherText) : Decrypt(cipherText);
     }
 
-    public string? Decrypt(byte[] cipherText, string key, bool bytesIncludeHash = true)
+    public string Decrypt(byte[] cipherText, string key, bool bytesIncludeHash = true)
     {
         ValidateKey(key);
         if (cipherText.Length == 0) return "";
