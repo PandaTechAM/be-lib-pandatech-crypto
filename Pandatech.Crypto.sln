@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandatech.Crypto.Tests", "../tests/Pandatech.Crypto.Tests\Pandatech.Crypto.Tests.csproj", "{89D6535F-549C-4091-BF21-96565F098C3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandatech.Crypto.Tests", "src/Pandatech.Crypto.Tests\Pandatech.Crypto.Tests.csproj", "{89D6535F-549C-4091-BF21-96565F098C3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandatech.Crypto", "Pandatech.Crypto\Pandatech.Crypto.csproj", "{97B88123-20B1-4F0A-82E7-DFDD08A03B7C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandatech.Crypto", "src/Pandatech.Crypto\Pandatech.Crypto.csproj", "{97B88123-20B1-4F0A-82E7-DFDD08A03B7C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
