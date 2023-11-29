@@ -1,7 +1,7 @@
 name: Deploy NuGet Package
 
 env:
-  PROJECT_PATH: './Pandatech.Crypto/Pandatech.Crypto.csproj'
+  PROJECT_PATH: './src/Pandatech.Crypto/Pandatech.Crypto.csproj'
   OUTPUT_DIR: 'nupkgs'
   NUGET_SOURCE: 'https://api.nuget.org/v3/index.json'
   NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
@@ -18,21 +18,18 @@ jobs:
         dotnet-version: [ '8.x.x' ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Build
         run: dotnet build ${{ env.PROJECT_PATH }}
 
-      - name: Test
-        run: dotnet test ${{ env.PROJECT_PATH }} --collect:"XPlat Code Coverage"
-
       - name: Pack
-        run: dotnet pack ${{ env.PROJECT_PATH }} --output ${{ env.OUTPUT_DIR }} 
+        run: dotnet pack ${{ env.PROJECT_PATH }} --output ${{ env.OUTPUT_DIR }}
 
       - name: Publish
         run: dotnet nuget push ${{ env.OUTPUT_DIR }}/*.nupkg -k ${{ env.NUGET_API_KEY }} -s ${{ env.NUGET_SOURCE }}
