@@ -4,7 +4,7 @@ namespace Pandatech.Crypto;
 
 public static class Mask
 {
-    public static string MaskEmail(string email)
+    public static string MaskEmail(this string email)
     {
         if (!PandaValidator.IsEmail(email))
         {
@@ -20,7 +20,7 @@ public static class Mask
         return $"{maskedLocalPart}@{domainPart}";
     }
 
-    public static string MaskPhoneNumber(string phoneNumber)
+    public static string MaskPhoneNumber(this string phoneNumber)
     {
         if (string.IsNullOrEmpty(phoneNumber))
         {

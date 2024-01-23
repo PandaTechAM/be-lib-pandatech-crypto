@@ -13,7 +13,7 @@ public class MaskTests
     [InlineData("a@b.com", "a@b.com")]
     public void MaskEmail_ValidEmails_ReturnsMaskedEmail(string input, string expected)
     {
-        var result = Mask.MaskEmail(input);
+        var result = input.MaskEmail();
         Assert.Equal(expected, result);
     }
 
@@ -22,7 +22,7 @@ public class MaskTests
     [InlineData("notanemail")]
     public void MaskEmail_InvalidEmails_ThrowsArgumentException(string input)
     {
-        Assert.Throws<ArgumentException>(() => Mask.MaskEmail(input));
+        Assert.Throws<ArgumentException>(input.MaskEmail);
     }
 
     [Theory]
@@ -31,7 +31,7 @@ public class MaskTests
     [InlineData("12", "12")]
     public void MaskPhoneNumber_ValidPhoneNumbers_ReturnsMaskedPhone(string input, string expected)
     {
-        var result = Mask.MaskPhoneNumber(input);
+        var result = input.MaskPhoneNumber();
         Assert.Equal(expected, result);
     }
 
@@ -40,6 +40,6 @@ public class MaskTests
     [InlineData("")]
     public void MaskPhoneNumber_InvalidPhoneNumbers_ThrowsArgumentException(string input)
     {
-        Assert.Throws<ArgumentException>(() => Mask.MaskPhoneNumber(input));
+        Assert.Throws<ArgumentException>(input.MaskPhoneNumber);
     }
 }
