@@ -201,6 +201,13 @@ string maskedEmail = Mask.MaskEmail("example@email.com");
 string maskedPhone = Mask.MaskPhoneNumber("1234567890");
 
 // Output: "******7890"
+
+// You can also use the MaskEmail and MaskPhoneNumber methods as extension methods on strings
+string maskedEmail = "example@email.com";
+string maskedPhone = "1234567890";
+
+string maskedEmail = maskedEmail.MaskEmail();
+string maskedPhone = maskedPhone.MaskPhoneNumber();
 ```
 
 ## 1.5. License
