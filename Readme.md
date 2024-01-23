@@ -1,25 +1,26 @@
 # 1. PandaTech.Crypto
 
-
 - [1. PandaTech.Crypto](#1-pandatechcrypto)
-  - [1.1. Introduction](#11-introduction)
-  - [1.2. Features](#12-features)
-  - [1.3. Installation](#13-installation)
-  - [1.4. How to Use](#14-how-to-use)
-    - [1.4.1. Configuring Dependency Injection](#141-configuring-dependency-injection)
-    - [1.4.2. AES256 Class](#142-aes256-class)
-      - [1.4.2.1. Immutable Configurations](#1421-immutable-configurations)
-      - [1.4.2.2. Encryption/Decryption methods with hashing](#1422-encryptiondecryption-methods-with-hashing)
-      - [1.4.2.3. Encryption/Decryption methods without hashing](#1423-encryptiondecryption-methods-without-hashing)
-      - [1.4.2.4. Encryption/Decryption methods with custom key (overriding options for one time)](#1424-encryptiondecryption-methods-with-custom-key-overriding-options-for-one-time)
-    - [1.4.3. Argon2id Class](#143-argon2id-class)
-      - [1.4.3.1. Default Configurations](#1431-default-configurations)
-      - [1.4.3.2 Hash password and verify hash](#1432-hash-password-and-verify-hash)
-    - [1.4.4. Random Class](#144-random-class)
-    - [1.4.5. Password Class](#145-password-class)
-    - [1.4.6. Sha3 Class](#146-sha3-class)
-    - [1.4.7. GZip Class](#147-gzip-class)
-  - [1.5. License](#15-license)
+    - [1.1. Introduction](#11-introduction)
+    - [1.2. Features](#12-features)
+    - [1.3. Installation](#13-installation)
+    - [1.4. How to Use](#14-how-to-use)
+        - [1.4.1. Configuring Dependency Injection](#141-configuring-dependency-injection)
+        - [1.4.2. AES256 Class](#142-aes256-class)
+            - [1.4.2.1. Immutable Configurations](#1421-immutable-configurations)
+            - [1.4.2.2. Encryption/Decryption methods with hashing](#1422-encryptiondecryption-methods-with-hashing)
+            - [1.4.2.3. Encryption/Decryption methods without hashing](#1423-encryptiondecryption-methods-without-hashing)
+            - [1.4.2.4. Encryption/Decryption methods with custom key (overriding options for one time)](#1424-encryptiondecryption-methods-with-custom-key-overriding-options-for-one-time)
+        - [1.4.3. Argon2id Class](#143-argon2id-class)
+            - [1.4.3.1. Default Configurations](#1431-default-configurations)
+            - [1.4.3.2 Hash password and verify hash](#1432-hash-password-and-verify-hash)
+        - [1.4.4. Random Class](#144-random-class)
+        - [1.4.5. Password Class](#145-password-class)
+        - [1.4.6. Sha3 Class](#146-sha3-class)
+        - [1.4.7. GZip Class](#147-gzip-class)
+        - [1.4.8. Mask Class](#148-mask-class)
+            - [1.4.8.1. Masking Email Addresses](#1481-masking-email-addresses)
+    - [1.5. License](#15-license)
 
 ## 1.1. Introduction
 
@@ -44,6 +45,8 @@ resources—hash generation takes under 500ms on a container with 1 vCore and 1G
   specific character sets.
 * **GZip Compression/Decompression:** Efficiently compress and decompress data using GZip, with support for byte arrays
   and streams.
+* **Masking:** Mask sensitive information like email addresses and phone numbers, ensuring that they are partially
+  hidden and thus safeguarded.
 * **Performance Optimized:** Tested to run efficiently in resource-constrained environments.
 * **High Test Coverage:** Confidence backed by 99% unit test coverage.
 
@@ -163,9 +166,11 @@ var isHashValid = Sha3.VerifyHash("yourPlainText", sha3Hash);
 ### 1.4.7. GZip Class
 
 Compression and Decompression
-The `GZip` class provides methods for compressing and decompressing data using GZip. It supports operations on strings, byte arrays, and streams.
+The `GZip` class provides methods for compressing and decompressing data using GZip. It supports operations on strings,
+byte arrays, and streams.
 
 Example usage for compressing and decompressing a string:
+
 ```csharp
 using Pandatech.Crypto;
 
@@ -175,7 +180,27 @@ byte[] compressedData = GZip.Compress(data);
 
 // Decompress back to string
 string decompressedData = Encoding.UTF8.GetString(GZip.Decompress(compressedData));
+```
 
+### 1.4.8. Mask Class
+
+The `Mask` class in the PandaTech.Crypto library provides methods to mask sensitive information like email addresses and
+phone numbers, ensuring that they are partially hidden and thus safeguarded.
+
+#### 1.4.8.1. Masking Email Addresses
+
+The `MaskEmail` method masks the local part of an email address, showing only the first two characters and replacing the
+rest with asterisks (*), keeping the domain part intact.
+
+```csharp
+// Example usage for masking an email
+string maskedEmail = Mask.MaskEmail("example@email.com");
+
+// Output: "ex*****@email.com"
+// Example usage for masking a phone number
+string maskedPhone = Mask.MaskPhoneNumber("1234567890");
+
+// Output: "******7890"
 ```
 
 ## 1.5. License
