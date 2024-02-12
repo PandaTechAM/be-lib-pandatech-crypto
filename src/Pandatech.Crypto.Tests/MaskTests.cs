@@ -7,7 +7,7 @@ using System;
 public class MaskTests
 {
     [Theory]
-    [InlineData("vazgen.Sargsyan@vazgen.com", "va***************@vazgen.com")]
+    [InlineData("vazgen.Sargsyan@vazgen.com", "va*************@vazgen.com")]
     [InlineData("test@example.com", "te**@example.com")]
     [InlineData("ab@c.com", "ab@c.com")]
     [InlineData("a@b.com", "a@b.com")]

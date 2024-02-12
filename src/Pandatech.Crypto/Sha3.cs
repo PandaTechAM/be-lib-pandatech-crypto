@@ -19,6 +19,17 @@ public static class Sha3
         return result;
     }
     
+    public static byte[] Hash(byte[] bytes)
+    {
+        var digest = new KeccakDigest(512);
+        digest.BlockUpdate(bytes, 0, bytes.Length);
+        
+        var result = new byte[digest.GetDigestSize()];
+        digest.DoFinal(result, 0);
+        
+        return result;
+    }
+    
     public static bool VerifyHash(string data, byte[] hash)
     {
         var newHash = Hash(data);
