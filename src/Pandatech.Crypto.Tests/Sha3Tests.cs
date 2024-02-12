@@ -1,4 +1,6 @@
-﻿namespace Pandatech.Crypto.Tests;
+﻿using System.Text;
+
+namespace Pandatech.Crypto.Tests;
 
 public class Sha3Tests
 {
@@ -21,6 +23,17 @@ public class Sha3Tests
     {
         const string data = "Hello, world!";
         var hash = Sha3.Hash(data);
+
+        var result = Sha3.VerifyHash(data, hash);
+        Assert.True(result);
+    }
+    
+    [Fact]
+    public void Hash_VerifyHash_WithBytes_IsTrue()
+    {
+        const string data = "Hello, world!";
+        var bytes = Encoding.UTF8.GetBytes(data);
+        var hash = Sha3.Hash(bytes);
 
         var result = Sha3.VerifyHash(data, hash);
         Assert.True(result);
