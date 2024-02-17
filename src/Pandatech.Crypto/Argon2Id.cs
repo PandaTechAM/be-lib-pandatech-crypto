@@ -46,27 +46,17 @@ public class Argon2Id
         return result;
     }
 
-    public bool VerifyHash(string password, byte[] hash)
+    public bool VerifyHash(string password, byte[] passwordHash)
     {
-        if (hash == null || hash.Length <= _options.SaltSize)
+        if (passwordHash == null || passwordHash.Length <= _options.SaltSize)
         {
-            throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(hash));
+            throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(passwordHash));
         }
 
-        var salt = hash.Take(_options.SaltSize).ToArray();
+        var salt = passwordHash.Take(_options.SaltSize).ToArray();
 
         var newHash = HashPassword(password, salt);
-        return ConstantTimeComparison(hash, newHash);
-    }
-
-    public bool VerifyHash(byte[] passwordHash, byte[] hash)
-    {
-        if (hash == null || hash.Length <= _options.SaltSize)
-        {
-            throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(hash));
-        }
-
-        return ConstantTimeComparison(hash, passwordHash);
+        return ConstantTimeComparison(passwordHash, newHash);
     }
 
     private static bool ConstantTimeComparison(IReadOnlyList<byte> a, IReadOnlyList<byte> b)
