@@ -8,12 +8,12 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>2.2.7</Version>
+        <Version>2.2.8</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Overload for sha3</PackageReleaseNotes>
+        <PackageReleaseNotes>Overload for argon</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
