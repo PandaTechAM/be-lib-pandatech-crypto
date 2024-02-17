@@ -11,6 +11,7 @@ public class Argon2Id
     {
         _options = options;
     }
+
     public Argon2Id()
     {
         _options = new Argon2IdOptions();
@@ -56,6 +57,16 @@ public class Argon2Id
 
         var newHash = HashPassword(password, salt);
         return ConstantTimeComparison(hash, newHash);
+    }
+
+    public bool VerifyHash(byte[] passwordHash, byte[] hash)
+    {
+        if (hash == null || hash.Length <= _options.SaltSize)
+        {
+            throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(hash));
+        }
+
+        return ConstantTimeComparison(hash, passwordHash);
     }
 
     private static bool ConstantTimeComparison(IReadOnlyList<byte> a, IReadOnlyList<byte> b)

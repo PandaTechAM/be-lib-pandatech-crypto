@@ -22,6 +22,17 @@ public class Argon2IdTests
 
         Assert.True(argon2Id.VerifyHash(password, hash));
     }
+    
+    [Fact]
+    public void HashVerify_ShouldBeValid_2()
+    {
+        var argon2Id = new Argon2Id();
+
+        var password = Password.GenerateRandom(32, true, true, true, true);
+        var hash = argon2Id.HashPassword(password);
+
+        Assert.True(argon2Id.VerifyHash(hash, hash));
+    }
 
     [Fact]
     public void HashVerify_InvalidPassword_ShouldBeInvalid()
