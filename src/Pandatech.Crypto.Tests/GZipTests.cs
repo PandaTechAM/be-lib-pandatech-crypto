@@ -4,6 +4,44 @@ namespace Pandatech.Crypto.Tests;
 
 public class GZipTests
 {
+    private class TestClass
+    {
+        public int Id { get; init; }
+        public string? Name { get; init; }
+    }
+
+    [Fact]
+    public void CompressAndDecompress_ShouldReturnOriginalObject()
+    {
+        var originalObject = new TestClass
+        {
+            Id = 1,
+            Name = "Test"
+        };
+
+        // Act
+        var compressedData = GZip.Compress(originalObject);
+        var decompressedObject = GZip.Decompress<TestClass>(compressedData);
+
+        // Assert
+        Assert.NotNull(decompressedObject);
+        Assert.Equal(originalObject.Id, decompressedObject.Id);
+        Assert.Equal(originalObject.Name, decompressedObject.Name);
+    }
+
+    [Fact]
+    public void Decompress_WithInvalidData_ShouldReturnNull()
+    {
+        // Arrange
+        var invalidData = Encoding.UTF8.GetBytes("Invalid compressed data");
+
+        // Act & Assert
+        var exception = Record.Exception(() => GZip.Decompress<TestClass>(invalidData));
+        Assert.NotNull(exception);
+        Assert.IsType<InvalidDataException>(exception);
+    }
+
+
     [Fact]
     public void Compress_String_ReturnsCompressedData()
     {
