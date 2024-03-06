@@ -8,12 +8,12 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>2.3.0</Version>
+        <Version>2.3.1</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Gzip underlying implementation change and Password symbols</PackageReleaseNotes>
+        <PackageReleaseNotes>Gzip serializer fix</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
