@@ -2,17 +2,19 @@
 using System.Text;
 using System.Text.Json;
 
+
+
 namespace Pandatech.Crypto;
 
 public static class GZip
 {
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
     public static byte[] Compress<T>(T obj)
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-        var jsonString = JsonSerializer.Serialize(obj, options);
+        var jsonString = JsonSerializer.Serialize(obj, JsonSerializerOptions);
         return Compress(jsonString);
     }
 
@@ -45,8 +47,16 @@ public static class GZip
 
     public static T? Decompress<T>(byte[] compressedData)
     {
-        var jsonString = Decompress(compressedData);
-        return JsonSerializer.Deserialize<T>(jsonString);
+        var decompressed = Decompress(compressedData);
+        var jsonString = Encoding.UTF8.GetString(decompressed);
+        return JsonSerializer.Deserialize<T>(jsonString, JsonSerializerOptions);
+    }
+    
+    public static T? Decompress<T>(string compressedData)
+    {
+        var decompressed = Decompress(compressedData);
+        var jsonString = Encoding.UTF8.GetString(decompressed);
+        return JsonSerializer.Deserialize<T>(jsonString, JsonSerializerOptions);
     }
 
     public static byte[] Decompress(string compressedBase64)

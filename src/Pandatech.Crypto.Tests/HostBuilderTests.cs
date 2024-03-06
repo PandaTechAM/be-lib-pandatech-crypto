@@ -90,5 +90,21 @@ public class HostBuilderTests
     
         Assert.Same(argon2IdInstance1, argon2IdInstance2);
     }
+    
+    
+    [Fact]
+    public void AddPandatechCryptoArgon2Id_RegistersServicesCorrectly2()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddPandatechCryptoArgon2Id();
+
+        // Assert
+        var serviceProvider = services.BuildServiceProvider();
+        Assert.NotNull(serviceProvider.GetService<Argon2IdOptions>());
+        Assert.NotNull(serviceProvider.GetService<Argon2Id>());
+    }
 
 }

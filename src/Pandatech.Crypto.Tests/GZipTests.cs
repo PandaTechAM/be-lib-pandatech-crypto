@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Pandatech.Crypto.Tests;
 
@@ -6,8 +7,8 @@ public class GZipTests
 {
     private class TestClass
     {
-        public int Id { get; init; }
-        public string? Name { get; init; }
+        public int SomeLongId { get; init; }
+        public string? FullName { get; init; }
     }
 
     [Fact]
@@ -15,8 +16,8 @@ public class GZipTests
     {
         var originalObject = new TestClass
         {
-            Id = 1,
-            Name = "Test"
+            SomeLongId = 1,
+            FullName = "Test"
         };
 
         // Act
@@ -25,8 +26,28 @@ public class GZipTests
 
         // Assert
         Assert.NotNull(decompressedObject);
-        Assert.Equal(originalObject.Id, decompressedObject.Id);
-        Assert.Equal(originalObject.Name, decompressedObject.Name);
+        Assert.Equal(originalObject.SomeLongId, decompressedObject.SomeLongId);
+        Assert.Equal(originalObject.FullName, decompressedObject.FullName);
+    }
+
+    [Fact]
+    public void CompressAndDecompress_ShouldReturnOriginalObject2()
+    {
+        var originalObject = new TestClass
+        {
+            SomeLongId = 1,
+            FullName = "Test"
+        };
+
+        // Act
+        var compressedData = GZip.Compress(originalObject);
+        var stringData = Convert.ToBase64String(compressedData);
+        var decompressedObject = GZip.Decompress<TestClass>(stringData);
+
+        // Assert
+        Assert.NotNull(decompressedObject);
+        Assert.Equal(originalObject.SomeLongId, decompressedObject.SomeLongId);
+        Assert.Equal(originalObject.FullName, decompressedObject.FullName);
     }
 
     [Fact]
@@ -94,7 +115,7 @@ public class GZipTests
     {
         // Arrange
         var input = Encoding.UTF8.GetBytes("Sample text for compression");
-    
+
         // Act
         var compressed = GZip.Compress(input);
         var decompressed = GZip.Decompress(compressed);
