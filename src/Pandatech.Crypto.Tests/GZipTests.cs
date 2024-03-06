@@ -43,17 +43,20 @@ public class GZipTests
 
 
     [Fact]
-    public void Compress_String_ReturnsCompressedData()
+    public void CompressAndDecompress_String_ReturnsOriginalData()
     {
         // Arrange
         const string input = "Hello, world!";
-        var expected = GZip.Compress(Encoding.UTF8.GetBytes(input));
 
         // Act
-        var result = GZip.Compress(input);
+        var compressed = GZip.Compress(input);
+        var decompressedBytes = GZip.Decompress(compressed);
+
+        // Convert decompressed bytes back to string
+        var decompressedString = Encoding.UTF8.GetString(decompressedBytes);
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.Equal(input, decompressedString);
     }
 
     [Fact]
@@ -76,8 +79,22 @@ public class GZipTests
     public void Compress_And_Decompress_Byte_Array_ReturnsOriginalData()
     {
         // Arrange
-        var input = Encoding.UTF8.GetBytes("Hello, world!");
+        var input = "Hello, world!";
 
+        // Act
+        var compressed = GZip.Compress(input);
+        var decompressed = GZip.Decompress(compressed);
+
+        // Assert
+        Assert.Equal(input, Encoding.UTF8.GetString(decompressed));
+    }
+
+    [Fact]
+    public void CompressAndDecompress_ByteArray_ReturnsOriginalData()
+    {
+        // Arrange
+        var input = Encoding.UTF8.GetBytes("Sample text for compression");
+    
         // Act
         var compressed = GZip.Compress(input);
         var decompressed = GZip.Decompress(compressed);
@@ -86,24 +103,6 @@ public class GZipTests
         Assert.Equal(input, decompressed);
     }
 
-    [Fact]
-    public void Compress_And_Decompress_Stream_ReturnsOriginalData()
-    {
-        // Arrange
-        var input = "Hello, world!"u8.ToArray();
-        using var inputStream = new MemoryStream(input);
-        using var compressedStream = new MemoryStream();
-        using var decompressedStream = new MemoryStream();
-
-        // Act
-        GZip.Compress(inputStream, compressedStream);
-        compressedStream.Seek(0, SeekOrigin.Begin);
-        GZip.Decompress(compressedStream, decompressedStream);
-        var result = decompressedStream.ToArray();
-
-        // Assert
-        Assert.Equal(input, result);
-    }
 
     [Theory]
     [InlineData("")]

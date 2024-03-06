@@ -8,37 +8,44 @@ public static class GZip
 {
     public static byte[] Compress<T>(T obj)
     {
-        var jsonString = JsonSerializer.Serialize(obj);
-
-        var jsonData = Encoding.UTF8.GetBytes(jsonString);
-
-        return Compress(jsonData);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var jsonString = JsonSerializer.Serialize(obj, options);
+        return Compress(jsonString);
     }
 
     public static byte[] Compress(string data)
     {
-        return Compress(Encoding.UTF8.GetBytes(data));
+        using var memoryStream = new MemoryStream();
+        using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+        {
+            using (var writer = new StreamWriter(gzipStream, Encoding.UTF8))
+            {
+                writer.Write(data);
+            }
+        }
+
+        var compressedData = memoryStream.ToArray();
+
+        return compressedData;
     }
 
     public static byte[] Compress(byte[] data)
     {
-        using var compressedStream = new MemoryStream();
-        Compress(new MemoryStream(data), compressedStream);
-        return compressedStream.ToArray();
+        using var memoryStream = new MemoryStream();
+        using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+        {
+            gzipStream.Write(data, 0, data.Length);
+        }
+
+        return memoryStream.ToArray();
     }
 
-    public static void Compress(Stream sourceStream, Stream destinationStream)
-    {
-        using var zipStream = new GZipStream(destinationStream, CompressionMode.Compress, leaveOpen: true);
-        sourceStream.CopyTo(zipStream);
-    }
-    
     public static T? Decompress<T>(byte[] compressedData)
     {
-        var decompressedData = Decompress(compressedData);
-
-        var jsonString = Encoding.UTF8.GetString(decompressedData);
-
+        var jsonString = Decompress(compressedData);
         return JsonSerializer.Deserialize<T>(jsonString);
     }
 
@@ -50,14 +57,10 @@ public static class GZip
 
     public static byte[] Decompress(byte[] data)
     {
-        using var decompressedStream = new MemoryStream();
-        Decompress(new MemoryStream(data), decompressedStream);
-        return decompressedStream.ToArray();
-    }
-
-    public static void Decompress(Stream sourceStream, Stream destinationStream)
-    {
-        using var zipStream = new GZipStream(sourceStream, CompressionMode.Decompress, leaveOpen: true);
-        zipStream.CopyTo(destinationStream);
+        using var compressedStream = new MemoryStream(data);
+        using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+        using var reader = new StreamReader(gzipStream, Encoding.UTF8);
+        var decompressedString = reader.ReadToEnd();
+        return Encoding.UTF8.GetBytes(decompressedString);
     }
 }
