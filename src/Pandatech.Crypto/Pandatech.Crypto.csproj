@@ -8,7 +8,7 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>2.2.10</Version>
+        <Version>2.2.11</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
