@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Pandatech.Crypto\Pandatech.Crypto.csproj" />
+      <ProjectReference Include="..\..\src\Pandatech.Crypto\Pandatech.Crypto.csproj" />
     </ItemGroup>
 
 </Project>
