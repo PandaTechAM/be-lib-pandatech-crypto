@@ -11,6 +11,7 @@
             - [1.4.2.2. Encryption/Decryption methods with hashing](#1422-encryptiondecryption-methods-with-hashing)
             - [1.4.2.3. Encryption/Decryption methods without hashing](#1423-encryptiondecryption-methods-without-hashing)
             - [1.4.2.4. Encryption/Decryption methods with custom key (overriding options for one time)](#1424-encryptiondecryption-methods-with-custom-key-overriding-options-for-one-time)
+            - [1.4.2.5. Stream-based Encryption/Decryption methods](#1425-stream-based-encryptiondecryption-methods)
         - [1.4.3. Argon2id Class](#143-argon2id-class)
             - [1.4.3.1. Default Configurations](#1431-default-configurations)
             - [1.4.3.2 Hash password and verify hash](#1432-hash-password-and-verify-hash)
@@ -111,6 +112,21 @@ string customKey = "your-custom-base64-encoded-key";
 byte[] cipherText = aes256.Encrypt("your-plaintext", customKey);
 string plainText = aes256.Decrypt(cipherText, customKey);
 ```
+#### 1.4.2.5. Stream-based Encryption/Decryption methods
+
+The AES256 class also supports stream-based operations, allowing for encryption and decryption directly on streams, which is ideal for handling large files or data streams efficiently.
+
+```csharp
+using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("your-plaintext"));
+using var outputStream = new MemoryStream();
+aes256.EncryptStream(inputStream, outputStream, "your-custom-base64-encoded-key");
+byte[] encryptedBytes = outputStream.ToArray();
+
+using var inputStream = new MemoryStream(encryptedBytes);
+using var outputStream = new MemoryStream();
+aes256.DecryptStream(inputStream, outputStream, "your-custom-base64-encoded-key");
+string decryptedText = Encoding.UTF8.GetString(outputStream.ToArray());
+```
 
 ### 1.4.3. Argon2id Class
 
@@ -180,6 +196,20 @@ byte[] compressedData = GZip.Compress(data);
 
 // Decompress back to string
 string decompressedData = Encoding.UTF8.GetString(GZip.Decompress(compressedData));
+```
+
+Example usage for compressing and decompressing with streams:
+    
+```csharp
+using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("Sample Data"));
+using var compressedStream = new MemoryStream();
+GZip.Compress(inputStream, compressedStream);
+byte[] compressedData = compressedStream.ToArray();
+
+using var inputStream = new MemoryStream(compressedData);
+using var decompressedStream = new MemoryStream();
+GZip.Decompress(inputStream, decompressedStream);
+string decompressedData = Encoding.UTF8.GetString(decompressedStream.ToArray());
 ```
 
 ### 1.4.8. Mask Class
