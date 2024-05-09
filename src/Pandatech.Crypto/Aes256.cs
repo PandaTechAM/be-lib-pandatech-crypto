@@ -2,28 +2,23 @@
 
 namespace Pandatech.Crypto;
 
-public class Aes256
+public class Aes256(Aes256Options options)
 {
-    private readonly Aes256Options _options;
+    private readonly Aes256Options _options = options ?? throw new ArgumentNullException(nameof(options));
     private const int KeySize = 256;
     private const int IvSize = 16;
     private const int HashSize = 64;
 
-    public Aes256(Aes256Options options)
-    {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
-
     public byte[] Encrypt(string? plainText, bool addHashToBytes = true)
     {
-        if (string.IsNullOrEmpty(plainText)) return Array.Empty<byte>();
+        if (string.IsNullOrEmpty(plainText)) return [];
         return addHashToBytes ? EncryptWithHash(plainText) : Encrypt(plainText);
     }
 
     public byte[] Encrypt(string? plainText, string key, bool addHashToBytes = true)
     {
         ValidateKey(key);
-        if (string.IsNullOrEmpty(plainText)) return Array.Empty<byte>();
+        if (string.IsNullOrEmpty(plainText)) return [];
         return addHashToBytes ? EncryptWithHash(plainText, key) : Encrypt(plainText, key);
     }
 
@@ -64,6 +59,23 @@ public class Aes256
         var result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
         return result;
     }
+    
+    public void EncryptStream(Stream inputStream, Stream outputStream, string? key = null)
+    {
+        key ??= _options.Key;
+        ValidateKey(key);
+        using var aesAlg = Aes.Create();
+        aesAlg.KeySize = KeySize;
+        aesAlg.Padding = PaddingMode.PKCS7;
+        aesAlg.Key = Convert.FromBase64String(key);
+        aesAlg.GenerateIV();
+
+        outputStream.Write(aesAlg.IV, 0, aesAlg.IV.Length);
+
+        using var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+        using var cryptoStream = new CryptoStream(outputStream, encryptor, CryptoStreamMode.Write, leaveOpen: true);
+        inputStream.CopyTo(cryptoStream);
+    }
 
 
     private string Decrypt(byte[] cipherText, string? key)
@@ -100,6 +112,26 @@ public class Aes256
         key ??= _options.Key;
         var cipherText = cipherTextWithHash.Skip(HashSize).ToArray();
         return Decrypt(cipherText, key);
+    }
+    
+    public void DecryptStream(Stream inputStream, Stream outputStream, string? key = null)
+    {
+        key ??= _options.Key;
+        ValidateKey(key);
+            
+        var iv = new byte[IvSize];
+        if (inputStream.Read(iv, 0, IvSize) != IvSize)
+            throw new ArgumentException("Input stream does not contain a complete IV.");
+
+        using var aesAlg = Aes.Create();
+        aesAlg.KeySize = KeySize;
+        aesAlg.Padding = PaddingMode.PKCS7;
+        aesAlg.Key = Convert.FromBase64String(key);
+        aesAlg.IV = iv;
+
+        using var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+        using var cryptoStream = new CryptoStream(inputStream, decryptor, CryptoStreamMode.Read, leaveOpen: true);
+        cryptoStream.CopyTo(outputStream);
     }
 
     private static void ValidateKey(string key)

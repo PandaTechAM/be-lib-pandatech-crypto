@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json.Serialization;
 
 namespace Pandatech.Crypto.Tests;
 
@@ -9,6 +8,76 @@ public class GZipTests
     {
         public int SomeLongId { get; init; }
         public string? FullName { get; init; }
+    }
+    
+    [Fact]
+    public void CompressDecompressStream_ShouldReturnOriginalData()
+    {
+        // Arrange
+        var originalData = "MySensitiveData";
+        var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(originalData));
+        var compressedStream = new MemoryStream();
+        var decompressedStream = new MemoryStream();
+
+        // Act - Compress
+        GZip.Compress(inputStream, compressedStream);
+        compressedStream.Seek(0, SeekOrigin.Begin); // Reset stream position for reading
+
+        // Act - Decompress
+        GZip.Decompress(compressedStream, decompressedStream);
+        decompressedStream.Seek(0, SeekOrigin.Begin); // Reset stream position for reading
+        var resultData = new StreamReader(decompressedStream).ReadToEnd();
+
+        // Assert
+        Assert.Equal(originalData, resultData);
+    }
+
+    [Fact]
+    public void CompressStream_ShouldReduceSizeForCompressibleData()
+    {
+        // Arrange
+        var originalData = new string('a', 1024); // Highly compressible data
+        var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(originalData));
+        var compressedStream = new MemoryStream();
+
+        // Act
+        GZip.Compress(inputStream, compressedStream);
+
+        // Assert
+        Assert.True(compressedStream.Length < inputStream.Length);
+    }
+
+    [Fact]
+    public void DecompressStream_WithCorruptedData_ShouldThrow()
+    {
+        // Arrange
+        var corruptedData = new byte[] { 0x0, 0x1, 0x2, 0x3 }; // Not valid compressed data
+        var inputStream = new MemoryStream(corruptedData);
+        var decompressedStream = new MemoryStream();
+
+        // Act & Assert
+        Assert.Throws<InvalidDataException>(() => GZip.Decompress(inputStream, decompressedStream));
+    }
+
+    [Fact]
+    public void CompressDecompressEmptyStream_ShouldHandleGracefully()
+    {
+        // Arrange
+        var emptyStream = new MemoryStream();
+        var compressedStream = new MemoryStream();
+        var decompressedStream = new MemoryStream();
+
+        // Act
+        GZip.Compress(emptyStream, compressedStream);
+        compressedStream.Seek(0, SeekOrigin.Begin); // Reset the compressed stream position for reading
+
+        // Act
+        GZip.Decompress(compressedStream, decompressedStream);
+        decompressedStream.Seek(0, SeekOrigin.Begin); // Reset the decompressed stream position for reading
+        var resultData = new StreamReader(decompressedStream).ReadToEnd();
+
+        // Assert
+        Assert.Empty(resultData);
     }
 
     [Fact]
