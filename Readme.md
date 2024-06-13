@@ -101,8 +101,8 @@ string plainText = aes256.Decrypt(cipherText);
 #### 1.4.2.3. Encryption/Decryption methods without hashing
 
 ```csharp
-byte[] cipherText = aes256.Encrypt("your-plaintext", false);
-string plainText = aes256.Decrypt(cipherText, false);
+byte[] cipherText = aes256.EncryptWithout("your-plaintext");
+string plainText = aes256.DecryptWithout(cipherText);
 ```
 
 #### 1.4.2.4. Encryption/Decryption methods with custom key (overriding options for one time)
