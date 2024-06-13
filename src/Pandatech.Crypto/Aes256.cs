@@ -9,34 +9,56 @@ public class Aes256(Aes256Options options)
     private const int IvSize = 16;
     private const int HashSize = 64;
 
-    public byte[] Encrypt(string? plainText, bool addHashToBytes = true)
+    public byte[] Encrypt(string plainText)
     {
-        if (string.IsNullOrEmpty(plainText)) return [];
-        return addHashToBytes ? EncryptWithHash(plainText) : Encrypt(plainText);
+        return EncryptWithHashInner(plainText);
     }
 
-    public byte[] Encrypt(string? plainText, string key, bool addHashToBytes = true)
+    public byte[] EncryptWithoutHash(string plainText)
     {
-        ValidateKey(key);
-        if (string.IsNullOrEmpty(plainText)) return [];
-        return addHashToBytes ? EncryptWithHash(plainText, key) : Encrypt(plainText, key);
+        return EncryptWithoutHashInner(plainText, null);
     }
 
-    public string? Decrypt(byte[]? cipherText, bool includesHash = true)
-    {
-        if (cipherText == null || cipherText.Length == 0) return "";
-        return includesHash ? DecryptIgnoringHash(cipherText) : Decrypt(cipherText);
-    }
-
-    public string Decrypt(byte[] cipherText, string key, bool bytesIncludeHash = true)
+    public byte[] Encrypt(string plainText, string key)
     {
         ValidateKey(key);
-        if (cipherText.Length == 0) return "";
-        return bytesIncludeHash ? DecryptIgnoringHash(cipherText, key) : Decrypt(cipherText, key);
+
+        return EncryptWithHashInner(plainText, key);
     }
 
+    public byte[] EncryptWithoutHash(string plainText, string key)
+    {
+        ValidateKey(key);
 
-    private byte[] Encrypt(string plainText, string? key)
+        return EncryptWithoutHashInner(plainText, key);
+    }
+
+    public void Encrypt(Stream inputStream, Stream outputStream, string? key = null)
+    {
+        key ??= _options.Key;
+        ValidateKey(key);
+        using var aesAlg = Aes.Create();
+        aesAlg.KeySize = KeySize;
+        aesAlg.Padding = PaddingMode.PKCS7;
+        aesAlg.Key = Convert.FromBase64String(key);
+        aesAlg.GenerateIV();
+
+        outputStream.Write(aesAlg.IV, 0, aesAlg.IV.Length);
+
+        using var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+        using var cryptoStream = new CryptoStream(outputStream, encryptor, CryptoStreamMode.Write, leaveOpen: true);
+        inputStream.CopyTo(cryptoStream);
+    }
+
+    private byte[] EncryptWithHashInner(string plainText, string? key = null)
+    {
+        key ??= _options.Key;
+        var encryptedBytes = EncryptWithoutHashInner(plainText, key);
+        var hashBytes = Sha3.Hash(plainText);
+        return hashBytes.Concat(encryptedBytes).ToArray();
+    }
+
+    private byte[] EncryptWithoutHashInner(string plainText, string? key)
     {
         key ??= _options.Key;
         ValidateText(plainText);
@@ -59,26 +81,58 @@ public class Aes256(Aes256Options options)
         var result = aesAlg.IV.Concat(encryptedPasswordByte).ToArray();
         return result;
     }
+
+    public string Decrypt(byte[] cipherText)
+    {
+        return cipherText.Length == 0
+            ? ""
+            : DecryptSkippingHashInner(cipherText);
+    }
+
+    public string DecryptWithoutHash(byte[] cipherText)
+    {
+        return cipherText.Length == 0
+            ? ""
+            : DecryptWithoutSkippingHashInner(cipherText, null);
+    }
+
+    public string Decrypt(byte[] cipherText, string key)
+    {
+        ValidateKey(key);
+        return cipherText.Length == 0
+            ? ""
+            : DecryptSkippingHashInner(cipherText, key);
+    }
+
+    public string DecryptWithoutHash(byte[] cipherText, string key)
+    {
+        ValidateKey(key);
+        return cipherText.Length == 0
+            ? ""
+            : DecryptWithoutSkippingHashInner(cipherText, key);
+    }
     
-    public void EncryptStream(Stream inputStream, Stream outputStream, string? key = null)
+    public void Decrypt(Stream inputStream, Stream outputStream, string? key = null)
     {
         key ??= _options.Key;
         ValidateKey(key);
+
+        var iv = new byte[IvSize];
+        if (inputStream.Read(iv, 0, IvSize) != IvSize)
+            throw new ArgumentException("Input stream does not contain a complete IV.");
+
         using var aesAlg = Aes.Create();
         aesAlg.KeySize = KeySize;
         aesAlg.Padding = PaddingMode.PKCS7;
         aesAlg.Key = Convert.FromBase64String(key);
-        aesAlg.GenerateIV();
+        aesAlg.IV = iv;
 
-        outputStream.Write(aesAlg.IV, 0, aesAlg.IV.Length);
-
-        using var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-        using var cryptoStream = new CryptoStream(outputStream, encryptor, CryptoStreamMode.Write, leaveOpen: true);
-        inputStream.CopyTo(cryptoStream);
+        using var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+        using var cryptoStream = new CryptoStream(inputStream, decryptor, CryptoStreamMode.Read, leaveOpen: true);
+        cryptoStream.CopyTo(outputStream);
     }
 
-
-    private string Decrypt(byte[] cipherText, string? key)
+    private string DecryptWithoutSkippingHashInner(byte[] cipherText, string? key)
     {
         key ??= _options.Key;
         ValidateCipherText(cipherText);
@@ -99,39 +153,11 @@ public class Aes256(Aes256Options options)
         return srDecrypt.ReadToEnd();
     }
 
-    private byte[] EncryptWithHash(string plainText, string? key = null)
-    {
-        key ??= _options.Key;
-        var encryptedBytes = Encrypt(plainText, key);
-        var hashBytes = Sha3.Hash(plainText);
-        return hashBytes.Concat(encryptedBytes).ToArray();
-    }
-
-    private string DecryptIgnoringHash(IEnumerable<byte> cipherTextWithHash, string? key = null)
+    private string DecryptSkippingHashInner(IEnumerable<byte> cipherTextWithHash, string? key = null)
     {
         key ??= _options.Key;
         var cipherText = cipherTextWithHash.Skip(HashSize).ToArray();
-        return Decrypt(cipherText, key);
-    }
-    
-    public void DecryptStream(Stream inputStream, Stream outputStream, string? key = null)
-    {
-        key ??= _options.Key;
-        ValidateKey(key);
-            
-        var iv = new byte[IvSize];
-        if (inputStream.Read(iv, 0, IvSize) != IvSize)
-            throw new ArgumentException("Input stream does not contain a complete IV.");
-
-        using var aesAlg = Aes.Create();
-        aesAlg.KeySize = KeySize;
-        aesAlg.Padding = PaddingMode.PKCS7;
-        aesAlg.Key = Convert.FromBase64String(key);
-        aesAlg.IV = iv;
-
-        using var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-        using var cryptoStream = new CryptoStream(inputStream, decryptor, CryptoStreamMode.Read, leaveOpen: true);
-        cryptoStream.CopyTo(outputStream);
+        return DecryptWithoutSkippingHashInner(cipherText, key);
     }
 
     private static void ValidateKey(string key)

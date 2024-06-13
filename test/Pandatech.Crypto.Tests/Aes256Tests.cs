@@ -5,33 +5,32 @@ namespace Pandatech.Crypto.Tests;
 public class Aes256Tests
 {
     [Fact]
-    public void EncryptDecryptWithParameter_ShouldReturnOriginalString()
+    public void EncryptDecryptWithHash_ShouldReturnOriginalString()
     {
         var aes256 = new Aes256(new Aes256Options());
 
         var key = Random.GenerateAes256KeyString();
         const string original = "MySensitiveData";
-        var encrypted = aes256.Encrypt(original, key, false);
-        var decrypted = aes256.Decrypt(encrypted, key, false);
+        var encrypted = aes256.Encrypt(original, key);
+        var decrypted = aes256.Decrypt(encrypted, key);
 
         Assert.Equal(original, decrypted);
     }
 
     [Fact]
-    public void EncryptDecryptWithoutParameter_ShouldReturnOriginalString()
+    public void EncryptDecryptWithoutHash_ShouldReturnOriginalString()
     {
         var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
         var aes256 = new Aes256(aes256Options);
-        Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
-        var encrypted = aes256.Encrypt(original, false);
-        var decrypted = aes256.Decrypt(encrypted, false);
+        var encrypted = aes256.EncryptWithoutHash(original);
+        var decrypted = aes256.DecryptWithoutHash(encrypted);
 
         Assert.Equal(original, decrypted);
     }
 
     [Fact]
-    public void EncryptWithParameterAndHash_ShouldReturnByteArrayWithHash()
+    public void EncryptWithHash_ShouldReturnByteArrayWithHash()
     {
         var aes256 = new Aes256(new Aes256Options());
         var key = Random.GenerateAes256KeyString();
@@ -44,11 +43,10 @@ public class Aes256Tests
     }
 
     [Fact]
-    public void EncryptWithoutParameterAndHash_ShouldReturnByteArrayWithHash()
+    public void EncryptAndHash_ShouldReturnByteArrayWithHash()
     {
         var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
         var aes256 = new Aes256(aes256Options);
-        Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
         var encryptedWithHash = aes256.Encrypt(original);
 
@@ -74,7 +72,6 @@ public class Aes256Tests
     {
         var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
         var aes256 = new Aes256(aes256Options);
-        Environment.SetEnvironmentVariable("AES_KEY", Random.GenerateAes256KeyString());
         const string original = "MySensitiveData";
         var encryptedWithHash = aes256.Encrypt(original);
         var decrypted = aes256.Decrypt(encryptedWithHash);
@@ -114,17 +111,6 @@ public class Aes256Tests
     }
 
     [Fact]
-    public void EncryptDecryptWithEmptyText_ShouldReturnEmptyString()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        var key = Random.GenerateAes256KeyString();
-        var original = string.Empty;
-        var encrypted = aes256.Encrypt(original, key);
-        var decrypted = aes256.Decrypt(encrypted, key);
-        Assert.Equal(original, decrypted);
-    }
-
-    [Fact]
     public void EncryptDecryptWithNullCipher_ShouldReturnEmptyString()
     {
         var aes256 = new Aes256(new Aes256Options());
@@ -159,11 +145,11 @@ public class Aes256Tests
         var outputStream = new MemoryStream();
 
         // Act
-        aes256.EncryptStream(inputStream, outputStream, aes256Options.Key);
+        aes256.Encrypt(inputStream, outputStream, aes256Options.Key);
         outputStream.Seek(0, SeekOrigin.Begin);
 
         var resultStream = new MemoryStream();
-        aes256.DecryptStream(outputStream, resultStream, aes256Options.Key);
+        aes256.Decrypt(outputStream, resultStream, aes256Options.Key);
         resultStream.Seek(0, SeekOrigin.Begin);
         var decryptedData = new StreamReader(resultStream).ReadToEnd();
 
@@ -181,11 +167,11 @@ public class Aes256Tests
         var outputStream = new MemoryStream();
 
         // Act
-        aes256.EncryptStream(inputStream, outputStream, aes256Options.Key);
+        aes256.Encrypt(inputStream, outputStream, aes256Options.Key);
         outputStream.Seek(0, SeekOrigin.Begin); // Reset the position for reading.
 
         var resultStream = new MemoryStream();
-        aes256.DecryptStream(outputStream, resultStream, aes256Options.Key);
+        aes256.Decrypt(outputStream, resultStream, aes256Options.Key);
         resultStream.Seek(0, SeekOrigin.Begin);
         var decryptedData = new StreamReader(resultStream).ReadToEnd();
 
@@ -203,7 +189,7 @@ public class Aes256Tests
         var outputStream = new MemoryStream();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => aes256.EncryptStream(inputStream, outputStream, invalidKey));
+        Assert.Throws<ArgumentException>(() => aes256.Encrypt(inputStream, outputStream, invalidKey));
     }
 
     [Fact]
@@ -216,6 +202,6 @@ public class Aes256Tests
         var outputStream = new MemoryStream();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => aes256.DecryptStream(inputStream, outputStream, invalidKey));
+        Assert.Throws<ArgumentException>(() => aes256.Decrypt(inputStream, outputStream, invalidKey));
     }
 }
