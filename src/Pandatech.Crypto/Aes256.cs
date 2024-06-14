@@ -61,7 +61,8 @@ public class Aes256(Aes256Options options)
     private byte[] EncryptWithoutHashInner(string plainText, string? key)
     {
         key ??= _options.Key;
-        ValidateText(plainText);
+        if (plainText == "")
+            return [];
         using var aesAlg = Aes.Create();
         aesAlg.KeySize = KeySize;
         aesAlg.Padding = PaddingMode.PKCS7;
@@ -111,7 +112,7 @@ public class Aes256(Aes256Options options)
             ? ""
             : DecryptWithoutSkippingHashInner(cipherText, key);
     }
-    
+
     public void Decrypt(Stream inputStream, Stream outputStream, string? key = null)
     {
         key ??= _options.Key;
@@ -135,7 +136,8 @@ public class Aes256(Aes256Options options)
     private string DecryptWithoutSkippingHashInner(byte[] cipherText, string? key)
     {
         key ??= _options.Key;
-        ValidateCipherText(cipherText);
+        if (cipherText.Length == 0)
+            return "";
         var iv = cipherText.Take(IvSize).ToArray();
         var encrypted = cipherText.Skip(IvSize).ToArray();
 
@@ -166,19 +168,6 @@ public class Aes256(Aes256Options options)
             throw new ArgumentException("Invalid key.");
     }
 
-    private static void ValidateText(string text)
-    {
-        if (string.IsNullOrEmpty(text) && text != null)
-            throw new ArgumentException("Text cannot be null or empty.");
-    }
-
-    private static void ValidateCipherText(byte[] cipherText)
-    {
-        if (cipherText.Length == 0) return;
-
-        if (cipherText == null || cipherText.Length < IvSize)
-            throw new ArgumentException("Invalid cipher text.");
-    }
 
     private static bool IsBase64String(string s)
     {
