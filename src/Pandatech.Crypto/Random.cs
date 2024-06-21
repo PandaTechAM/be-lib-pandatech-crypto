@@ -20,17 +20,11 @@ public static class Random
         return Convert.ToBase64String(buffer);
     }
 
-    public static long GeneratePandaId(long? previousId)
+    public static long GenerateIdWithVariableSequence(long previousId, int approximateSequenceVariability = 100)
     {
-        var random = GenerateBytes(4);
-        var randomValue = BitConverter.ToInt32(random, 0) & 0x7FFFFFFF;
-        var randomOffset = randomValue % 36 + 1;
+        var minimumRandRange = approximateSequenceVariability / 25;
+        var random = System.Random.Shared.NextInt64(minimumRandRange, approximateSequenceVariability + 1);
         
-        if (previousId is 0 or null)
-        {
-            return 1_000_000 + randomOffset;
-        }
-
-        return (long)(previousId + randomOffset)!;
+        return (previousId + random);
     }
 }

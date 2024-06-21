@@ -11,18 +11,7 @@ public class RandomTests
         Assert.NotNull(randomBytes);
         Assert.Equal(length, randomBytes.Length);
     }
-
-    [Fact]
-    public void GeneratePandaId_WithZeroPreviousId_ReturnsValidId()
-    {
-        const long previousId = 0;
-        for (var i = 0; i < 1_000_000; ++i)
-        {
-            var newId = Random.GeneratePandaId(previousId);
-
-            Assert.True(newId is > 1_000_000 and < 1_000_037);
-        }
-    }
+    
 
     [Fact]
     public void GeneratePandaId_WithNonZeroPreviousId_ReturnsIncrementedId()
@@ -30,7 +19,7 @@ public class RandomTests
         const long previousId = 1_000_000;
         for (var i = 0; i < 1_000_000; ++i)
         {
-            var newId = Random.GeneratePandaId(previousId);
+            var newId = Random.GenerateIdWithVariableSequence(previousId);
 
             Assert.True(newId > previousId);
         }
@@ -43,7 +32,7 @@ public class RandomTests
 
         for (var i = 0; i < 1_000_000; ++i)
         {
-            var id = Random.GeneratePandaId(previousId);
+            var id = Random.GenerateIdWithVariableSequence(previousId);
             Assert.NotEqual(previousId, id);
             previousId = id;
         }
