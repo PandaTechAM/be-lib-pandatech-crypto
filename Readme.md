@@ -152,6 +152,7 @@ var isPasswordValid = _argon2Id.VerifyHash("yourPassword", hashedPassword);
 ```csharp
 var randomBytes = Random.GenerateBytes(16);
 var aesKey = Random.GenerateAes256KeyString();
+var unimaginableUniqueAndRandomToken = Random.GenerateSecureToken() //256-bit token in string format
 ```
 
 ### 1.4.5. Password Class

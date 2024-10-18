@@ -37,4 +37,16 @@ public class RandomTests
             previousId = id;
         }
     }
+    
+    [Fact]
+    public void GenerateSecureToken_ShouldReturnValidUrlSafeString()
+    {
+       var token = Random.GenerateSecureToken();
+
+       Assert.NotNull(token);
+       Assert.Equal(43, token.Length); // 32 bytes => 43 Base64 characters (without padding)
+       Assert.DoesNotContain("+", token);
+       Assert.DoesNotContain("/", token);
+       Assert.DoesNotContain("=", token);
+    }
 }

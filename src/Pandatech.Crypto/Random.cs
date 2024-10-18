@@ -25,6 +25,20 @@ public static class Random
         var minimumRandRange = approximateSequenceVariability / 25;
         var random = System.Random.Shared.NextInt64(minimumRandRange, approximateSequenceVariability + 1);
         
-        return (previousId + random);
+        return previousId + random;
+    }
+    
+    public static string GenerateSecureToken()
+    {
+       const int length = 32; // 32 bytes = 256 bits
+       var bytes = new byte[length];
+       using (var rng = RandomNumberGenerator.Create())
+       {
+          rng.GetBytes(bytes);
+       }
+       return Convert.ToBase64String(bytes)
+                     .Replace("+", "-")  // Make URL-safe
+                     .Replace("/", "_")  // Make URL-safe
+                     .TrimEnd('=');      // Remove padding
     }
 }
