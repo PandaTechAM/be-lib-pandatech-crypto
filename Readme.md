@@ -104,7 +104,6 @@ string decryptedText = Encoding.UTF8.GetString(outputStream.ToArray());
    encrypting emails in your software and also want that emails to be unique. With our Aes256 class by default your
    emails will be unique as in front will be the unique hash.
 
-
 ### Argon2id Class
 
 **Default Configurations**
@@ -149,22 +148,24 @@ bool isValid = Password.Validate(password, 16, includeUppercase, includeLowercas
 
 ### Sha2 Class
 
-The `Sha2` class simplifies HMAC-SHA256 operations by offering byte array, hex, and Base64 outputs.
+The `Sha2` class simplifies HMAC-SHA256 operations by offering byte array, hex, and Base64 outputs. It also hat params
+string[] where the method automatically concatenates all strings and then computes the hash.
 
 ```csharp
 // Prepare the key and message
-var key = Encoding.UTF8.GetBytes("your-secret-key");
-var message = "HelloWorld";
+var key = Encoding.UTF8.GetBytes("secret");
+var message1 = "Hello";
+var message2 = "World";
 
 // Compute HMAC-SHA256 as a byte array
-byte[] hashBytes = Sha2.ComputeHmacSha256(key, message);
+byte[] hashBytes = Sha2.ComputeHmacSha256(key, message1, message2);
 
 // Get HMAC-SHA256 as a hex string
-string hexHash = Sha2.GetHmacSha256Hex(key, message);
+string hexHash = Sha2.GetHmacSha256Hex(key, message1, message2);
 // Output: 2e91612bb72b29d82f32789d063de62d5897a4ee5d3b5d34459801b94397b099
 
 // Get HMAC-SHA256 as a Base64 string
-string base64Hash = Sha2.GetHmacSha256Base64(key, message);
+string base64Hash = Sha2.GetHmacSha256Base64(key, message1, message2);
 // Output: LpFhK7crKdgvMnidBj3mLViXpO5dO100RZgBuUOXsJk=
 ```
 
