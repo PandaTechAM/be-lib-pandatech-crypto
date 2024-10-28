@@ -28,30 +28,31 @@ Install-Package Pandatech.Crypto
 
 ## How to Use
 
-### Configuring Dependency Injection
+### Configuring in Program.cs
 
-Add the following code to your Program.cs file to configure AES256 and Argon2Id services with minimal setup:
+Use the following code to configure AES256 and Argon2Id in your `Program.cs`:
 
 ```csharp
-using Pandatech.Crypto;
+using Pandatech.Crypto.Helpers;
+using Pandatech.Crypto.Extensions;
 
-// For Aes256
-builder.services.AddPandatechCryptoAes256(options =>
-{
-  options.Key = "YourAes256KeyHere"; // Make sure to use a secure key
-});
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
 
-// For Argon2Id default configuration
-builder.services.AddPandatechCryptoArgon2Id();
+// Register AES key
+app.AddAes256Key("YourBase64EncodedAes256KeyHere");
 
-// For Argon2Id overriding default configurations
-  builder.services.AddPandatechCryptoArgon2Id(options =>
+// Optional - Change default Argon2Id configurations. If below method is not called, default configurations will be used.
+app.ConfigureArgon2Id(options =>
 {
    options.SaltSize = 16;
    options.DegreeOfParallelism = 8;
    options.Iterations = 5;
    options.MemorySize = 128 * 1024;
-});
+}); 
+
+app.Run();
+
 ```
 
 ### AES256 Class
@@ -59,8 +60,14 @@ builder.services.AddPandatechCryptoArgon2Id();
 **Encryption/Decryption methods with hashing**
 
 ```csharp
-byte[] cipherText = aes256.Encrypt("your-plaintext");
-string plainText = aes256.Decrypt(cipherText);
+using Pandatech.Crypto.Helpers;
+
+// Encrypt using AES256
+var encryptedBytes = Aes256.Encrypt("your-plaintext");
+
+// Decrypt AES256-encrypted data
+var decryptedText = Aes256.Decrypt(encryptedBytes);
+
 ```
 
 **Encryption/Decryption methods without hashing**
@@ -74,24 +81,26 @@ string plainText = aes256.DecryptWithoutHash(cipherText);
 
 ```csharp
 string customKey = "your-custom-base64-encoded-key";
-byte[] cipherText = aes256.Encrypt("your-plaintext", customKey);
-string plainText = aes256.Decrypt(cipherText, customKey);
+
+// Encrypt with a custom key
+var encrypted = Aes256.Encrypt("your-plaintext", customKey);
+
+// Decrypt with the same key
+var decrypted = Aes256.Decrypt(encrypted, customKey);
 ```
 
 **Stream-based Encryption/Decryption methods**
 
-The AES256 class also supports stream-based operations, allowing for encryption and decryption directly on streams,
-which is ideal for handling large files or data streams efficiently.
-
 ```csharp
 using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("your-plaintext"));
 using var outputStream = new MemoryStream();
-aes256.EncryptStream(inputStream, outputStream, "your-custom-base64-encoded-key");
-byte[] encryptedBytes = outputStream.ToArray();
 
-using var inputStream = new MemoryStream(encryptedBytes);
-using var outputStream = new MemoryStream();
-aes256.DecryptStream(inputStream, outputStream, "your-custom-base64-encoded-key");
+// Encrypt stream
+Aes256.Encrypt(inputStream, outputStream, "your-base64-key");
+
+// Decrypt stream
+using var decryptedStream = new MemoryStream(outputStream.ToArray());
+Aes256.Decrypt(decryptedStream, outputStream, "your-base64-key");
 string decryptedText = Encoding.UTF8.GetString(outputStream.ToArray());
 ```
 
@@ -116,11 +125,13 @@ string decryptedText = Encoding.UTF8.GetString(outputStream.ToArray());
 **Examples on usage**
 
 ```csharp
-// Example usage for hashing
-var hashedPassword = _argon2Id.HashPassword("yourPassword");
+using Pandatech.Crypto.Helpers;
 
-// Example usage for verifying a hash
-var isPasswordValid = _argon2Id.VerifyHash("yourPassword", hashedPassword);
+// Hash a password using Argon2Id
+var hashedPassword = Argon2Id.HashPassword("yourPassword");
+
+// Verify a hashed password
+bool isValid = Argon2Id.VerifyHash("yourPassword", hashedPassword);
 ```
 
 ### Random Class
