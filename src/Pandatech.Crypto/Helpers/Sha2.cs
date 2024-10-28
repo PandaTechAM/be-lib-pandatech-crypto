@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Pandatech.Crypto;
+namespace Pandatech.Crypto.Helpers;
 
 public static class Sha2
 {
@@ -16,9 +16,11 @@ public static class Sha2
    public static string GetHmacSha256Hex(byte[] key, params string[] messages)
    {
       var hash = ComputeHmacSha256(key, messages);
-      return BitConverter.ToString(hash).Replace("-", "").ToLower();
+      return BitConverter.ToString(hash)
+                         .Replace("-", "")
+                         .ToLower();
    }
-   
+
    public static string GetHmacSha256Base64(byte[] key, params string[] messages)
    {
       var hash = ComputeHmacSha256(key, messages);

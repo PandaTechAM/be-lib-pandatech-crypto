@@ -1,4 +1,6 @@
-﻿namespace Pandatech.Crypto.Tests;
+﻿using Pandatech.Crypto.Helpers;
+
+namespace Pandatech.Crypto.Tests;
 
 public class Sha2Tests
 {
@@ -7,7 +9,11 @@ public class Sha2Tests
    {
       // Arrange
       var key = "secret"u8.ToArray();
-      var messages = new[] { "Hello", "World" };
+      var messages = new[]
+      {
+         "Hello",
+         "World"
+      };
       const string expectedHashHex = "2e91612bb72b29d82f32789d063de62d5897a4ee5d3b5d34459801b94397b099";
 
       // Act
@@ -37,7 +43,11 @@ public class Sha2Tests
    {
       // Arrange
       var key = "secret"u8.ToArray();
-      var messages = new[] { "Test", "Message" };
+      var messages = new[]
+      {
+         "Test",
+         "Message"
+      };
 
       // Act
       var hash1 = Sha2.GetHmacSha256Hex(key, messages);
@@ -46,13 +56,17 @@ public class Sha2Tests
       // Assert
       Assert.Equal(hash1, hash2);
    }
-   
+
    [Fact]
    public void HmacSha256Base64_ValidInput_ReturnsExpectedBase64()
    {
       // Arrange
       var key = "secret"u8.ToArray();
-      var messages = new[] { "Hello", "World" };
+      var messages = new[]
+      {
+         "Hello",
+         "World"
+      };
       const string expectedBase64 = "LpFhK7crKdgvMnidBj3mLViXpO5dO100RZgBuUOXsJk=";
 
       // Act

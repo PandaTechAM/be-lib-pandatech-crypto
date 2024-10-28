@@ -1,14 +1,11 @@
-﻿namespace Pandatech.Crypto;
+﻿using Pandatech.Crypto.Helpers;
 
-public class Aes256Options
-{
-    public string Key { get; set; } = null!;
-}
+namespace Pandatech.Crypto;
 
 public class Argon2IdOptions
 {
-    public int SaltSize { get; set; } = 16;
-    public int DegreeOfParallelism { get; set; } = 8;
-    public int Iterations { get; set; } = 5;
-    public int MemorySize { get; set; } = 128 * 1024; // 128 MB
+   public int SaltSize { get; set; } = Argon2Id.SaltSize;
+   public int DegreeOfParallelism { get; set; } = Argon2Id.DegreeOfParallelism;
+   public int Iterations { get; set; } = Argon2Id.Iterations;
+   public int MemorySize { get; set; } = Argon2Id.MemorySize;
 }

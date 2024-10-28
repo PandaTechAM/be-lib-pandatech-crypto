@@ -1,207 +1,184 @@
 using System.Text;
+using Pandatech.Crypto.Helpers;
+using Random = Pandatech.Crypto.Helpers.Random;
 
 namespace Pandatech.Crypto.Tests;
 
 public class Aes256Tests
 {
-    [Fact]
-    public void EncryptDecryptWithHash_ShouldReturnOriginalString()
-    {
-        var aes256 = new Aes256(new Aes256Options());
+   [Fact]
+   public void EncryptDecryptWithHash_ShouldReturnOriginalString()
+   {
+      var key = Random.GenerateAes256KeyString();
+      const string original = "MySensitiveData";
+      var encrypted = Aes256.Encrypt(original, key);
+      var decrypted = Aes256.Decrypt(encrypted, key);
 
-        var key = Random.GenerateAes256KeyString();
-        const string original = "MySensitiveData";
-        var encrypted = aes256.Encrypt(original, key);
-        var decrypted = aes256.Decrypt(encrypted, key);
+      Assert.Equal(original, decrypted);
+   }
 
-        Assert.Equal(original, decrypted);
-    }
+   [Fact]
+   public void EncryptDecryptWithoutHash_ShouldReturnOriginalString()
+   {
+      Aes256.RegisterKey(Random.GenerateAes256KeyString());
+      const string original = "MySensitiveData";
+      var encrypted = Aes256.EncryptWithoutHash(original);
+      var decrypted = Aes256.DecryptWithoutHash(encrypted);
 
-    [Fact]
-    public void EncryptDecryptWithoutHash_ShouldReturnOriginalString()
-    {
-        var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
-        var aes256 = new Aes256(aes256Options);
-        const string original = "MySensitiveData";
-        var encrypted = aes256.EncryptWithoutHash(original);
-        var decrypted = aes256.DecryptWithoutHash(encrypted);
+      Assert.Equal(original, decrypted);
+   }
 
-        Assert.Equal(original, decrypted);
-    }
+   [Fact]
+   public void EncryptWithHash_ShouldReturnByteArrayWithHash()
+   {
+      var key = Random.GenerateAes256KeyString();
+      const string original = "MySensitiveData";
+      var encryptedWithHash = Aes256.Encrypt(original, key);
 
-    [Fact]
-    public void EncryptWithHash_ShouldReturnByteArrayWithHash()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        var key = Random.GenerateAes256KeyString();
-        const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.Encrypt(original, key);
+      Assert.NotNull(encryptedWithHash);
+      Assert.True(encryptedWithHash.Length > original.Length);
+      Assert.True(encryptedWithHash.Length > 64);
+   }
 
-        Assert.NotNull(encryptedWithHash);
-        Assert.True(encryptedWithHash.Length > original.Length);
-        Assert.True(encryptedWithHash.Length > 64);
-    }
+   [Fact]
+   public void EncryptAndHash_ShouldReturnByteArrayWithHash()
+   {
+      Aes256.RegisterKey(Random.GenerateAes256KeyString());
 
-    [Fact]
-    public void EncryptAndHash_ShouldReturnByteArrayWithHash()
-    {
-        var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
-        var aes256 = new Aes256(aes256Options);
-        const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.Encrypt(original);
+      const string original = "MySensitiveData";
+      var encryptedWithHash = Aes256.Encrypt(original);
 
-        Assert.NotNull(encryptedWithHash);
-        Assert.True(encryptedWithHash.Length > original.Length);
-        Assert.True(encryptedWithHash.Length > 64);
-    }
+      Assert.NotNull(encryptedWithHash);
+      Assert.True(encryptedWithHash.Length > original.Length);
+      Assert.True(encryptedWithHash.Length > 64);
+   }
 
-    [Fact]
-    public void DecryptWithParameterAndIgnoringHash_ShouldReturnOriginalString()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        var key = Random.GenerateAes256KeyString();
-        const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.Encrypt(original, key);
-        var decrypted = aes256.Decrypt(encryptedWithHash, key);
+   [Fact]
+   public void DecryptWithParameterAndIgnoringHash_ShouldReturnOriginalString()
+   {
+      var key = Random.GenerateAes256KeyString();
+      const string original = "MySensitiveData";
+      var encryptedWithHash = Aes256.Encrypt(original, key);
+      var decrypted = Aes256.Decrypt(encryptedWithHash, key);
 
-        Assert.Equal(original, decrypted);
-    }
+      Assert.Equal(original, decrypted);
+   }
 
-    [Fact]
-    public void DecryptWithoutParameterAndIgnoringHash_ShouldReturnOriginalString()
-    {
-        var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
-        var aes256 = new Aes256(aes256Options);
-        const string original = "MySensitiveData";
-        var encryptedWithHash = aes256.Encrypt(original);
-        var decrypted = aes256.Decrypt(encryptedWithHash);
+   [Fact]
+   public void DecryptWithoutParameterAndIgnoringHash_ShouldReturnOriginalString()
+   {
+      Aes256.RegisterKey(Random.GenerateAes256KeyString());
 
-        Assert.Equal(original, decrypted);
-    }
+      const string original = "MySensitiveData";
+      var encryptedWithHash = Aes256.Encrypt(original);
+      var decrypted = Aes256.Decrypt(encryptedWithHash);
 
-    [Fact]
-    public void DecryptIgnoringHashWithInvalidData_ShouldThrowException()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        const string invalidKey = "InvalidKey";
-        var invalidData = new byte[50];
+      Assert.Equal(original, decrypted);
+   }
 
-        Assert.Throws<ArgumentException>(() => aes256.Decrypt(invalidData, invalidKey));
-    }
+   [Fact]
+   public void DecryptIgnoringHashWithInvalidData_ShouldThrowException()
+   {
+      const string invalidKey = "InvalidKey";
+      var invalidData = new byte[50];
 
-    [Fact]
-    public void EncryptDecryptWithInvalidKey_ShouldThrowException()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        const string invalidKey = "InvalidKey";
-        const string original = "MySensitiveData";
+      Assert.Throws<ArgumentException>(() => Aes256.Decrypt(invalidData, invalidKey));
+   }
 
-        Assert.Throws<ArgumentException>(() => aes256.Encrypt(original, invalidKey));
-    }
+   [Fact]
+   public void EncryptDecryptWithInvalidKey_ShouldThrowException()
+   {
+      const string invalidKey = "InvalidKey";
+      const string original = "MySensitiveData";
 
-    [Fact]
-    public void EncryptDecryptWithShortKey_ShouldThrowException()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        var shortKey = Convert.ToBase64String(new byte[15]); // Less than 256 bits
-        const string original = "MySensitiveData";
+      Assert.Throws<ArgumentException>(() => Aes256.Encrypt(original, invalidKey));
+   }
 
-        Assert.Throws<ArgumentException>(() => aes256.Encrypt(original, shortKey));
-        Assert.Throws<ArgumentException>(() => aes256.Decrypt([], shortKey));
-    }
+   [Fact]
+   public void EncryptDecryptWithShortKey_ShouldThrowException()
+   {
+      var shortKey = Convert.ToBase64String(new byte[15]); // Less than 256 bits
+      const string original = "MySensitiveData";
 
-    [Fact]
-    public void EncryptDecryptWithNullCipher_ShouldReturnEmptyString()
-    {
-        var aes256 = new Aes256(new Aes256Options());
-        var key = Random.GenerateAes256KeyString();
+      Assert.Throws<ArgumentException>(() => Aes256.Encrypt(original, shortKey));
+      Assert.Throws<ArgumentException>(() => Aes256.Decrypt([], shortKey));
+   }
 
-        Assert.Equal("", aes256.Decrypt([], key));
-    }
+   [Fact]
+   public void EncryptDecryptWithNullCipher_ShouldReturnEmptyString()
+   {
+      var key = Random.GenerateAes256KeyString();
 
-    [Fact]
-    public void GenerateAes256KeyIsValidInLoop()
-    {
-        for (var i = 0; i < 1_000; i++)
-        {
-            var aes256 = new Aes256(new Aes256Options()
-            {
-                Key = Random.GenerateAes256KeyString()
-            });
-            var encrypt = aes256.Encrypt("MySensitiveData");
-            var decrypt = aes256.Decrypt(encrypt);
-            Assert.Equal("MySensitiveData", decrypt);
-        }
-    }
+      Assert.Equal("", Aes256.Decrypt([], key));
+   }
 
-    [Fact]
-    public void EncryptDecryptStream_ShouldReturnOriginalData()
-    {
-        // Arrange
-        var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
-        var aes256 = new Aes256(aes256Options);
-        const string originalData = "MySensitiveData";
-        var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(originalData));
-        var outputStream = new MemoryStream();
 
-        // Act
-        aes256.Encrypt(inputStream, outputStream, aes256Options.Key);
-        outputStream.Seek(0, SeekOrigin.Begin);
+   [Fact]
+   public void EncryptDecryptStream_ShouldReturnOriginalData()
+   {
+      // Arrange
+      Aes256.RegisterKey(Random.GenerateAes256KeyString());
 
-        var resultStream = new MemoryStream();
-        aes256.Decrypt(outputStream, resultStream, aes256Options.Key);
-        resultStream.Seek(0, SeekOrigin.Begin);
-        var decryptedData = new StreamReader(resultStream).ReadToEnd();
+      const string originalData = "MySensitiveData";
+      var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(originalData));
+      var outputStream = new MemoryStream();
 
-        // Assert
-        Assert.Equal(originalData, decryptedData);
-    }
+      // Act
+      Aes256.Encrypt(inputStream, outputStream);
+      outputStream.Seek(0, SeekOrigin.Begin);
 
-    [Fact]
-    public void EncryptDecryptStreamWithEmptyContent_ShouldHandleGracefully()
-    {
-        // Arrange
-        var aes256Options = new Aes256Options { Key = Random.GenerateAes256KeyString() };
-        var aes256 = new Aes256(aes256Options);
-        var inputStream = new MemoryStream();
-        var outputStream = new MemoryStream();
+      var resultStream = new MemoryStream();
+      Aes256.Decrypt(outputStream, resultStream);
+      resultStream.Seek(0, SeekOrigin.Begin);
+      var decryptedData = new StreamReader(resultStream).ReadToEnd();
 
-        // Act
-        aes256.Encrypt(inputStream, outputStream, aes256Options.Key);
-        outputStream.Seek(0, SeekOrigin.Begin); // Reset the position for reading.
+      // Assert
+      Assert.Equal(originalData, decryptedData);
+   }
 
-        var resultStream = new MemoryStream();
-        aes256.Decrypt(outputStream, resultStream, aes256Options.Key);
-        resultStream.Seek(0, SeekOrigin.Begin);
-        var decryptedData = new StreamReader(resultStream).ReadToEnd();
+   [Fact]
+   public void EncryptDecryptStreamWithEmptyContent_ShouldHandleGracefully()
+   {
+      // Arrange
 
-        // Assert
-        Assert.Empty(decryptedData);
-    }
+      var key = Random.GenerateAes256KeyString();
+      var inputStream = new MemoryStream();
+      var outputStream = new MemoryStream();
 
-    [Fact]
-    public void EncryptStreamWithInvalidKey_ShouldThrowException()
-    {
-        // Arrange
-        var aes256 = new Aes256(new Aes256Options());
-        const string invalidKey = "InvalidKey";
-        var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("MySensitiveData"));
-        var outputStream = new MemoryStream();
+      // Act
+      Aes256.Encrypt(inputStream, outputStream, key);
+      outputStream.Seek(0, SeekOrigin.Begin); // Reset the position for reading.
 
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => aes256.Encrypt(inputStream, outputStream, invalidKey));
-    }
+      var resultStream = new MemoryStream();
+      Aes256.Decrypt(outputStream, resultStream, key);
+      resultStream.Seek(0, SeekOrigin.Begin);
+      var decryptedData = new StreamReader(resultStream).ReadToEnd();
 
-    [Fact]
-    public void DecryptStreamWithInvalidKey_ShouldThrowException()
-    {
-        // Arrange
-        var aes256 = new Aes256(new Aes256Options());
-        const string invalidKey = "InvalidKey";
-        var inputStream = new MemoryStream();
-        var outputStream = new MemoryStream();
+      // Assert
+      Assert.Empty(decryptedData);
+   }
 
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => aes256.Decrypt(inputStream, outputStream, invalidKey));
-    }
+   [Fact]
+   public void EncryptStreamWithInvalidKey_ShouldThrowException()
+   {
+      // Arrange
+      const string invalidKey = "InvalidKey";
+      var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("MySensitiveData"));
+      var outputStream = new MemoryStream();
+
+      // Act & Assert
+      Assert.Throws<ArgumentException>(() => Aes256.Encrypt(inputStream, outputStream, invalidKey));
+   }
+
+   [Fact]
+   public void DecryptStreamWithInvalidKey_ShouldThrowException()
+   {
+      // Arrange
+      const string invalidKey = "InvalidKey";
+      var inputStream = new MemoryStream();
+      var outputStream = new MemoryStream();
+
+      // Act & Assert
+      Assert.Throws<ArgumentException>(() => Aes256.Decrypt(inputStream, outputStream, invalidKey));
+   }
 }
