@@ -37,19 +37,18 @@ using Pandatech.Crypto.Helpers;
 using Pandatech.Crypto.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-// Register AES key
-app.AddAes256Key("YourBase64EncodedAes256KeyHere");
+builder.AddAes256Key("YourBase64EncodedAes256KeyHere");
 
 // Optional - Change default Argon2Id configurations. If below method is not called, default configurations will be used.
-app.ConfigureArgon2Id(options =>
+builder.ConfigureArgon2Id(options =>
 {
    options.SaltSize = 16;
    options.DegreeOfParallelism = 8;
    options.Iterations = 5;
    options.MemorySize = 128 * 1024;
 }); 
+
+var app = builder.Build();
 
 app.Run();
 

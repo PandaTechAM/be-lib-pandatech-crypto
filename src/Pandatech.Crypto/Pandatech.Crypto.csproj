@@ -8,12 +8,12 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>4.0.0</Version>
+        <Version>4.1.0</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Upgraded to .net 9</PackageReleaseNotes>
+        <PackageReleaseNotes>Extension changed from WebApplication to WebApplicationBuilder</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
