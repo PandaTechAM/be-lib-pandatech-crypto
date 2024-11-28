@@ -13,6 +13,12 @@ public static class Sha2
       return hmac.ComputeHash(concatenatedMessage);
    }
 
+   public static byte[] ComputeHmacSha256(string key, params string[] messages)
+   {
+      var keyBytes = Encoding.UTF8.GetBytes(key);
+      return ComputeHmacSha256(keyBytes, messages);
+   }
+
    public static string GetHmacSha256Hex(byte[] key, params string[] messages)
    {
       var hash = ComputeHmacSha256(key, messages);
