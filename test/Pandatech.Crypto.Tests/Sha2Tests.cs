@@ -22,6 +22,25 @@ public class Sha2Tests
       // Assert
       Assert.Equal(expectedHashHex, hashHex);
    }
+   
+   [Fact]
+   public void HmacSha256_ValidInput_ReturnsExpectedHash2()
+   {
+      // Arrange
+      var key = "secret"u8.ToArray();
+      var messages = new[]
+      {
+         "Hello",
+         "World"
+      };
+      const string expectedHashHex = "LpFhK7crKdgvMnidBj3mLViXpO5dO100RZgBuUOXsJk=";
+
+      // Act
+      var hashHex = Sha2.GetHmacSha256Base64(key, messages);
+
+      // Assert
+      Assert.Equal(expectedHashHex, hashHex);
+   }
 
    [Fact]
    public void HmacSha256_EmptyMessage_ReturnsHash()
