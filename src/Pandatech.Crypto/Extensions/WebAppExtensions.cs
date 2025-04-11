@@ -8,6 +8,7 @@ public static class WebAppExtensions
    public static WebApplicationBuilder AddAes256Key(this WebApplicationBuilder builder, string aesKey)
    {
       Aes256.RegisterKey(aesKey);
+      Aes256Siv.RegisterKey(aesKey);
       return builder;
    }
 

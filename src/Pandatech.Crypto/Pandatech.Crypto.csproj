@@ -8,12 +8,12 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>4.1.2</Version>
+        <Version>5.0.0</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Nuget updates</PackageReleaseNotes>
+        <PackageReleaseNotes>AES256 is now replaced by a new AES-SIV implementation for deterministic and authenticated encryption. The old Aes256 class is deprecated due to security concerns, and the new AesMigration class helps convert existing Aes256 ciphertext to the AES-SIV format. The readme has been updated with code samples and usage recommendations.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,8 +24,8 @@
     <ItemGroup>
         <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1"/>
         <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
-        <PackageReference Include="Pandatech.RegexBox" Version="3.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4"/>
+        <PackageReference Include="Pandatech.RegexBox" Version="3.0.1"/>
     </ItemGroup>
 
 </Project>
