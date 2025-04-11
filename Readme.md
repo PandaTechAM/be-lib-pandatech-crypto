@@ -2,21 +2,26 @@
 
 ## Introduction
 
-PandaTech.Crypto is a **wrapper library** that consolidates several widely used cryptographic libraries and tools into
-one
-**simple-to-use package**. It eliminates the need for multiple dependencies, excessive `using` directives, and
-duplicated
-code, offering an **intuitive API** to streamline **most popular** cryptographic tasks.
+**PandaTech.Crypto** is a **wrapper library** that consolidates several widely used cryptographic libraries and tools
+into one **simple-to-use package**. This means no more juggling multiple dependencies, heavy `using` directives, or
+scattered code to handle everyday cryptographic tasks. The library provides an **intuitive API** that streamlines the *
+*most popular** operations:
+
+- AES encryption (including a straightforward **AES256-SIV** implementation not natively offered by Microsoft or
+  BouncyCastle),
+- Hashing (Argon2Id, SHA2, SHA3),
+- GZip compression,
+- Secure random generation,
+- Password validation/strength checks,
+- Masking of sensitive data.
 
 Whether you need to **encrypt data**, **hash passwords**, or **generate secure random tokens**, PandaTech.Crypto
-provides
-lightweight abstractions over popular cryptographic solutions, ensuring simplicity and usability without sacrificing
-performance.
+provides lightweight abstractions over popular cryptographic solutions, ensuring simplicity and usability without
+sacrificing performance.
 
-The **Argon2Id** password hashing is optimized to run efficiently even in **resource-constrained environments** (e.g.,
-hash
-generation under 500ms on a container with 1 vCore and 1GB of RAM). Other operations such as **AES encryption**, **SHA**
-hashing, and **GZip** compression are lightweight enough for almost any environment.
+**Argon2Id** password hashing is optimized to run efficiently even in **resource-constrained environments** (e.g., under
+500 ms on a container with 1 vCore and 1 GB of RAM). Other operations—such as **AES encryption**, **SHA** hashing, and *
+*GZip** compression—are lightweight enough for almost any environment.
 
 ## Installation
 
@@ -30,7 +35,7 @@ Install-Package Pandatech.Crypto
 
 ### Configuring in Program.cs
 
-Use the following code to configure AES256 and Argon2Id in your `Program.cs`:
+Use the following code to configure AES256/AES256-SIV and Argon2Id in your `Program.cs`:
 
 ```csharp
 using Pandatech.Crypto.Helpers;
@@ -54,7 +59,13 @@ app.Run();
 
 ```
 
-### AES256 Class
+### AES256 Class (Old, Deprecated)
+
+> Warning
+> `Aes256` is now deprecated because it used a SHA3 hash for deterministic output, which can weaken overall security.
+> For
+> new development, use `Aes256Siv` instead.
+> For existing data, see the `AesMigration` class below to migrate old ciphertext to the new SIV format.
 
 **Encryption/Decryption methods with hashing**
 
@@ -111,6 +122,51 @@ string decryptedText = Encoding.UTF8.GetString(outputStream.ToArray());
    array in order to be able to do unique cheques and other operations on encrypted fields. For example imagine you are
    encrypting emails in your software and also want that emails to be unique. With our Aes256 class by default your
    emails will be unique as in front will be the unique hash.
+
+### AES256Siv (New, Recommended)
+
+**AES-SIV** (RFC 5297) is the new recommended approach in PandaTech.Crypto for deterministic AES encryption.
+It **does not** rely on storing a large hash for uniqueness, instead uses a **synthetic IV** approach to provide both
+authentication and deterministic encryption.
+
+```csharp
+// Encrypt
+byte[] sivCipher = Aes256Siv.Encrypt("your-plaintext");
+
+// Decrypt
+string decrypted = Aes256Siv.Decrypt(sivCipher);
+```
+
+**Notes:**
+
+- Deterministic: Encrypting the same plaintext with the same key always produces the same ciphertext.
+
+- Security: AES-SIV is an AEAD mode, providing both authenticity (tamper detection) and deterministic encryption.
+- Stream-based usage is also available via `Encrypt(Stream in, Stream out, string? key = null) and Decrypt(Stream in,
+  Stream out, string? key = null)`.
+
+### AesMigration
+
+If you have data encrypted with the old `Aes256` approach—either hashed or non-hashed—and want to convert it to the new
+`Aes256Siv` format, **AesMigration** can help:
+
+```csharp
+using Pandatech.Crypto.Helpers;
+
+// Convert a single ciphertext that was hashed (Aes256.Encrypt(...))
+byte[] newCipher = AesMigration.MigrateFromOldHashed(oldCiphertext);
+
+// Convert multiple hashed ciphertexts:
+List<byte[]> newCipherList = AesMigration.MigrateFromOldHashed(oldCipherList);
+```
+
+Similarly for **non-hashed** old ciphertext:
+
+```csharp
+byte[] newCipher = AesMigration.MigrateFromOldNonHashed(oldCiphertext);
+```
+
+The library provides nullable-friendly variants too (`MigrateFromOldHashedNullable`, etc.).
 
 ### Argon2id Class
 

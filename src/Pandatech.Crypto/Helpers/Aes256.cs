@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 
 namespace Pandatech.Crypto.Helpers;
 
+[Obsolete(
+   "This class is deprecated due to security concerns. Use Aes256Siv instead. For migration purposes we let this obsolete class with AesMigration class to make migration easier. Later this class will be removed.")]
 public static class Aes256
 {
    private const int KeySize = 256;
