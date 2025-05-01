@@ -20,10 +20,20 @@ public static class Aes256Siv
       GlobalKey = key;
    }
 
+   public static byte[] Encrypt(string plaintext)
+   {
+      return Encrypt(plaintext, null);
+   }
+
    public static byte[] Encrypt(string plaintext, string? key = null)
    {
       var bytes = Encoding.UTF8.GetBytes(plaintext);
       return Encrypt(bytes, key);
+   }
+
+   public static byte[] Encrypt(byte[] plaintext)
+   {
+      return Encrypt(plaintext, null);
    }
 
    public static byte[] Encrypt(byte[] plaintext, string? key = null)
@@ -42,6 +52,11 @@ public static class Aes256Siv
       return Arrays.Concatenate(siv, cipher);
    }
 
+   public static void Encrypt(Stream input, Stream output)
+   {
+      Encrypt(input, output, null);
+   }
+
    public static void Encrypt(Stream input, Stream output, string? key = null)
    {
       ArgumentNullException.ThrowIfNull(input);
@@ -53,10 +68,20 @@ public static class Aes256Siv
       output.Write(encrypted, 0, encrypted.Length);
    }
 
+   public static string Decrypt(byte[] ciphertext)
+   {
+      return Decrypt(ciphertext, null);
+   }
+
    public static string Decrypt(byte[] ciphertext, string? key = null)
    {
       var plain = DecryptToBytes(ciphertext, key);
       return Encoding.UTF8.GetString(plain);
+   }
+
+   public static byte[] DecryptToBytes(byte[] ciphertext)
+   {
+      return DecryptToBytes(ciphertext, null);
    }
 
    public static byte[] DecryptToBytes(byte[] ciphertext, string? key = null)
@@ -84,6 +109,11 @@ public static class Aes256Siv
          throw new CryptographicException("Invalid SIV / authentication tag.");
 
       return plain;
+   }
+
+   public static void Decrypt(Stream input, Stream output)
+   {
+      Decrypt(input, output, null);
    }
 
    public static void Decrypt(Stream input, Stream output, string? key = null)

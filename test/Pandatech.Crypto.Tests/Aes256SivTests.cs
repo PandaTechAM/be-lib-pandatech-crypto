@@ -12,6 +12,34 @@ public class Aes256SivTests
       return Random.GenerateAes256KeyString();
    }
 
+
+   [Theory]
+   [InlineData(" ")]
+   [InlineData("HelloWorld")]
+   [InlineData("Some special characters: ~!@#$%^&*()_+{}|:\"<>?")]
+   [InlineData("Tabs\tNewLine\nCarriageReturn\rMixed\n\rAll")]
+   [InlineData("Unicode test: 你好, мир, مرحبا, नमस्ते")]
+   [InlineData("Emoji test: \U0001F600 \U0001F31F \U0001F680")]
+   [InlineData("1234567890")]
+   [InlineData("😀😃😄😁😆")]
+   [InlineData("Line1\nLine2\r\nLine3")]
+   [InlineData("A string with a null char \0 in between")]
+   public void EncryptDecrypt_InlineData_WorksForAllKindOfStrings(string original)
+   {
+      // Arrange
+      var key = GenerateRandomAes256KeyString();
+
+      // Act
+      var encrypted = Aes256Siv.Encrypt(original, key);
+      var decrypted = Aes256Siv.Decrypt(encrypted, key);
+
+      var encryptedBytesToString = Encoding.UTF8.GetString(encrypted);
+      // Assert
+   
+      Assert.NotEqual(original, encryptedBytesToString);
+      Assert.Equal(original, decrypted);
+   }
+
    [Fact]
    public void EncryptDecrypt_ReturnsOriginalString()
    {
@@ -23,7 +51,7 @@ public class Aes256SivTests
       var encrypted = Aes256Siv.Encrypt(original, key);
       var decrypted = Aes256Siv.Decrypt(encrypted, key);
 
-     
+
       Assert.Equal(original, decrypted);
    }
 
