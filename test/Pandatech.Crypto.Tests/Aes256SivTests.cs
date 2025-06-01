@@ -223,4 +223,46 @@ public class Aes256SivTests
       // Act & Assert
       Assert.Throws<ArgumentException>(() => Aes256Siv.Decrypt(input, output, invalidKey));
    }
+   
+   [Fact]
+   public void ExportImport_Base64Utf8_RoundTrip_Succeeds()
+   {
+      // Arrange
+      var key = Random.GenerateAes256KeyString();
+      const string original = "Payload with ünicode 🌐 and line\r\nbreaks";
+
+      // --- export side ----------------------------------------------------
+      var cipher        = Aes256Siv.Encrypt(original, key);          // byte[]
+      var base64        = Convert.ToBase64String(cipher);            // string
+      var fileBytes     = Encoding.UTF8.GetBytes(base64);            // byte[]
+
+      // --- import side ----------------------------------------------------
+      var base64FromFile = Encoding.UTF8.GetString(fileBytes);       // string
+      var cipherFromFile = Convert.FromBase64String(base64FromFile); // byte[]
+      var decrypted      = Aes256Siv.Decrypt(cipherFromFile, key);   // string
+
+      // Assert
+      Assert.Equal(original, decrypted);
+   }
+
+   [Fact]
+   public void ExportImport_RawBinary_RoundTrip_Succeeds()
+   {
+      // Arrange
+      var key = Random.GenerateAes256KeyString();
+      const string original = "Binary-only pipeline";
+
+      // --- export side ----------------------------------------------------
+      var cipher = Aes256Siv.Encrypt(original, key); // byte[]
+      // (write cipher directly to *.pandavault)
+
+      // --- import side ----------------------------------------------------
+      var decrypted = Aes256Siv.Decrypt(cipher, key); // byte[]
+
+      // Assert
+      Assert.Equal(original, decrypted);
+   }
+
+  
+
 }
