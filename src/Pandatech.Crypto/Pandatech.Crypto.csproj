@@ -8,7 +8,7 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>5.0.2</Version>
+        <Version>5.0.3</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
@@ -24,7 +24,7 @@
     <ItemGroup>
         <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1"/>
         <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
     </ItemGroup>
 
 </Project>
