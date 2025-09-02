@@ -8,12 +8,12 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>5.0.3</Version>
+        <Version>6.0.0</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Nuget updates</PackageReleaseNotes>
+        <PackageReleaseNotes>Aes256Siv breaking changes introduced and AES256GCM. Refer to readme.md</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

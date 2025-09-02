@@ -56,10 +56,27 @@ builder.ConfigureArgon2Id(options =>
 var app = builder.Build();
 
 app.Run();
-
 ```
 
-### AES256 Class (Old, Deprecated)
+### 🔥 Breaking change (short) Version 5 to 6
+
+We introduced **two intentional** changes to make usage clearer and safer:
+
+1. `Aes256Siv` **is now RFC-5297 compliant**.
+   The previous, non-standard implementation is renamed `Aes256SivLegacy` (compat only).
+
+New `Aes256Gcm` for files.
+Fully compliant AES-GCM with framed streaming and truncation detection. Prefer this for files of any size.
+
+#### What you must do
+
+- If you previously called `Aes256Siv`, rename those references to `Aes256SivLegacy` to keep current data working.
+- When ready, migrate legacy ciphertexts to the new format using `AesSivMigration` (single/batch helpers).
+- For files, use `Aes256Gcm` instead of SIV.
+
+> That’s it. This section is intentionally short—see API notes below.
+
+### 🔥 Breaking change Version 4 to 5
 
 > Warning
 > `Aes256` is now deprecated because it used a SHA3 hash for deterministic output, which can weaken overall security.
@@ -123,27 +140,46 @@ string decryptedText = Encoding.UTF8.GetString(outputStream.ToArray());
    encrypting emails in your software and also want that emails to be unique. With our Aes256 class by default your
    emails will be unique as in front will be the unique hash.
 
-### AES256Siv (New, Recommended)
+### Aes256Gcm - Perfect for files
 
-**AES-SIV** (RFC 5297) is the new recommended approach in PandaTech.Crypto for deterministic AES encryption.
-It **does not** rely on storing a large hash for uniqueness, instead uses a **synthetic IV** approach to provide both
-authentication and deterministic encryption.
+**Use this for: images, videos, audio, PDF, XLSX, PPTX, etc.**
+
+- AEAD (confidentiality + integrity)
+- Bounded memory, chunked frames (`64 KiB` by default)
+- Detects clean truncation via a terminal 0-length authenticated frame
 
 ```csharp
 // Encrypt
-byte[] sivCipher = Aes256Siv.Encrypt("your-plaintext");
+Aes256Gcm.RegisterKey(key);
+using var fin  = File.OpenRead("report.pdf");
+using var fout = File.Create("report.pdf.gcm");
+Aes256Gcm.Encrypt(fin, fout);
 
-// Decrypt
-string decrypted = Aes256Siv.Decrypt(sivCipher);
+// decrypt
+using var ein  = File.OpenRead("report.pdf.gcm");
+using var eout = File.Create("report.dec.pdf");
+Aes256Gcm.Decrypt(ein, eout);
 ```
 
-**Notes:**
+> Tip: You can pass a per-call override key: Encrypt(fin, fout, key) / Decrypt(...).
 
-- Deterministic: Encrypting the same plaintext with the same key always produces the same ciphertext.
+### Aes256Siv - Deterministic and perfect for PII
 
-- Security: AES-SIV is an AEAD mode, providing both authenticity (tamper detection) and deterministic encryption.
-- Stream-based usage is also available via `Encrypt(Stream in, Stream out, string? key = null) and Decrypt(Stream in,
-  Stream out, string? key = null)`.
+Use this for PII you need to **match deterministically** (e.g., names/IDs) and decrypt later.
+This is **spec-correct AES-SIV (RFC-5297)**: CMAC S2V + masked CTR, output is `V(16B) || C`.
+
+```csharp
+Aes256Siv.RegisterKey(key);
+
+byte[] cipher = Aes256Siv.Encrypt("John Q Public");
+string plain  = Aes256Siv.Decrypt(cipher);
+
+// byte[] API
+var c2 = Aes256Siv.Encrypt(dataBytes);
+var p2 = Aes256Siv.DecryptToBytes(c2);
+```
+
+> Note: SIV is two-pass by design → not ideal for big files. Use GCM for files.
 
 ### AesMigration
 

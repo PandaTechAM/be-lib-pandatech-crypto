@@ -20,142 +20,113 @@ public static class Aes256Siv
       GlobalKey = key;
    }
 
-   public static byte[] Encrypt(string plaintext)
-   {
-      return Encrypt(plaintext, null);
-   }
+   // --- Simple API (no AD) -------------------------------------------------
 
-   public static byte[] Encrypt(string plaintext, string? key = null)
-   {
-      var bytes = Encoding.UTF8.GetBytes(plaintext);
-      return Encrypt(bytes, key);
-   }
+   public static byte[] Encrypt(string plaintext) => Encrypt(Encoding.UTF8.GetBytes(plaintext), null);
+   public static byte[] Encrypt(string plaintext, string? key) => Encrypt(Encoding.UTF8.GetBytes(plaintext), key);
+   public static byte[] Encrypt(byte[] plaintext) => Encrypt(plaintext, null);
 
-   public static byte[] Encrypt(byte[] plaintext)
-   {
-      return Encrypt(plaintext, null);
-   }
-
-   public static byte[] Encrypt(byte[] plaintext, string? key = null)
-   {
-      if (plaintext.Length == 0)
-      {
-         return [];
-      }
-
-      var keyBytes = GetKeyBytes(key);
-      var macKey = keyBytes[..16];
-      var encKey = keyBytes[16..];
-
-      var siv = ComputeS2V(macKey, plaintext);
-      var cipher = AesCtr(encKey, siv, plaintext);
-      return Arrays.Concatenate(siv, cipher);
-   }
-
-   public static void Encrypt(Stream input, Stream output)
-   {
-      Encrypt(input, output, null);
-   }
-
-   public static void Encrypt(Stream input, Stream output, string? key = null)
-   {
-      ArgumentNullException.ThrowIfNull(input);
-      ArgumentNullException.ThrowIfNull(output);
-
-      using var ms = new MemoryStream();
-      input.CopyTo(ms);
-      var encrypted = Encrypt(ms.ToArray(), key);
-      output.Write(encrypted, 0, encrypted.Length);
-   }
-
-   public static string Decrypt(byte[] ciphertext)
-   {
-      return Decrypt(ciphertext, null);
-   }
-
-   public static string Decrypt(byte[] ciphertext, string? key = null)
-   {
-      var plain = DecryptToBytes(ciphertext, key);
-      return Encoding.UTF8.GetString(plain);
-   }
-
-   public static byte[] DecryptToBytes(byte[] ciphertext)
-   {
-      return DecryptToBytes(ciphertext, null);
-   }
-
-   public static byte[] DecryptToBytes(byte[] ciphertext, string? key = null)
+   public static byte[] Encrypt(byte[] plaintext, string? key)
    {
       var keyBytes = GetKeyBytes(key);
+      var macKey = keyBytes.AsSpan(0, 16);
+      var encKey = keyBytes.AsSpan(16, 16);
 
-      switch (ciphertext.Length)
-      {
-         case 0:
-            return [];
-         case < 16:
-            throw new ArgumentException("At least 16 bytes are required for the SIV.");
-      }
-
-      var macKey = keyBytes[..16];
-      var encKey = keyBytes[16..];
-
-      var siv = ciphertext[..16];
-      var encrypted = ciphertext[16..];
-
-      var plain = AesCtr(encKey, siv, encrypted);
-      var expectedSiv = ComputeS2V(macKey, plain);
-
-      if (!CryptographicOperations.FixedTimeEquals(siv, expectedSiv))
-         throw new CryptographicException("Invalid SIV / authentication tag.");
-
-      return plain;
+      var v = ComputeS2V(macKey, plaintext); // 16 bytes
+      var q = MaskForCtr(v); // masked V
+      var c = AesCtr(encKey, q, plaintext);
+      return Arrays.Concatenate(v, c);
    }
 
-   public static void Decrypt(Stream input, Stream output)
+   public static string Decrypt(byte[] ciphertext) => Decrypt(ciphertext, null);
+
+   public static string Decrypt(byte[] ciphertext, string? key) =>
+      Encoding.UTF8.GetString(DecryptToBytes(ciphertext, key));
+
+   public static byte[] DecryptToBytes(byte[] ciphertext) => DecryptToBytes(ciphertext, null);
+
+   public static byte[] DecryptToBytes(byte[] ciphertext, string? key)
    {
-      Decrypt(input, output, null);
+      var keyBytes = GetKeyBytes(key);
+      if (ciphertext.Length < 16) throw new ArgumentException("At least 16 bytes are required for the SIV.");
+
+      var macKey = keyBytes.AsSpan(0, 16);
+      var encKey = keyBytes.AsSpan(16, 16);
+
+      var v = ciphertext[..16];
+      var enc = ciphertext[16..];
+      var q = MaskForCtr(v);
+
+      var plain = AesCtr(encKey, q, enc);
+      var expectedV = ComputeS2V(macKey, plain);
+
+      return !CryptographicOperations.FixedTimeEquals(v, expectedV)
+         ? throw new CryptographicException("Invalid SIV / authentication tag.")
+         : plain;
    }
 
-   public static void Decrypt(Stream input, Stream output, string? key = null)
-   {
-      ArgumentNullException.ThrowIfNull(input);
-      ArgumentNullException.ThrowIfNull(output);
+   // --- SIV core (RFC 5297; single-string, no AD) --------------------------
 
-      using var ms = new MemoryStream();
-      input.CopyTo(ms);
-      var decrypted = DecryptToBytes(ms.ToArray(), key);
-      output.Write(decrypted, 0, decrypted.Length);
-   }
-
-   private static byte[] ComputeS2V(byte[] macKey, byte[] data)
+   private static byte[] ComputeS2V(ReadOnlySpan<byte> macKey, ReadOnlySpan<byte> data)
    {
       var cmac = new CMac(new AesEngine());
-      cmac.Init(new KeyParameter(macKey));
+      cmac.Init(new KeyParameter(macKey.ToArray()));
+
+      // D = CMAC(0^128)
       var D = CmacHash(cmac, new byte[16]);
 
       if (data.Length >= 16)
       {
-         var block = new byte[16];
-         Array.Copy(data, data.Length - 16, block, 0, 16);
+         // T = CMAC( M[0..n-16) || (M_last16 XOR D) )
+         cmac.Reset();
+         if (data.Length > 16)
+         {
+            cmac.BlockUpdate(data[..^16]
+                  .ToArray(),
+               0,
+               data.Length - 16);
+         }
+
+         var last = data[^16..]
+            .ToArray();
          for (var i = 0; i < 16; i++)
-            block[i] ^= D[i];
-         return CmacHash(cmac, block);
+         {
+            last[i] ^= D[i];
+         }
+
+         cmac.BlockUpdate(last, 0, 16);
+
+         var outT = new byte[cmac.GetMacSize()];
+         cmac.DoFinal(outT, 0);
+         return outT;
       }
-      else
+
+      // T = CMAC( pad(M) XOR dbl(D) )
+      var dblD = DoubleBlock(D);
+      var block = Pad(data);
+      for (var i = 0; i < 16; i++)
       {
-         D = DoubleBlock(D);
-         var block = Pad(data);
-         for (var i = 0; i < 16; i++)
-            block[i] ^= D[i];
-         return CmacHash(cmac, block);
+         block[i] ^= dblD[i];
       }
+
+      return CmacHash(cmac, block);
    }
 
-   private static byte[] AesCtr(byte[] key, byte[] iv, byte[] input)
+   private static byte[] MaskForCtr(ReadOnlySpan<byte> v)
+   {
+      // Q = V with two bits cleared (per RFC 5297 §2.6)
+      var q = v.ToArray();
+      // Clear the MSB of byte 8 and byte 12 (correspond to bits 63 and 31)
+      q[8] &= 0x7F;
+      q[12] &= 0x7F;
+      return q;
+   }
+
+   private static byte[] AesCtr(ReadOnlySpan<byte> key, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> input)
    {
       var cipher = new BufferedBlockCipher(new SicBlockCipher(new AesEngine()));
-      cipher.Init(true, new ParametersWithIV(new KeyParameter(key), iv));
-      return cipher.DoFinal(input);
+      cipher.Init(true, new ParametersWithIV(new KeyParameter(key.ToArray()), iv.ToArray()));
+      return cipher.DoFinal(input.ToArray());
    }
 
    private static byte[] CmacHash(IMac cmac, byte[] input)
@@ -167,10 +138,14 @@ public static class Aes256Siv
       return output;
    }
 
-   private static byte[] Pad(byte[] input)
+   private static byte[] Pad(ReadOnlySpan<byte> input)
    {
       var padded = new byte[16];
-      Array.Copy(input, padded, input.Length);
+      if (!input.IsEmpty)
+      {
+         input.CopyTo(padded);
+      }
+
       padded[input.Length] = 0x80;
       return padded;
    }
@@ -188,33 +163,40 @@ public static class Aes256Siv
       }
 
       if ((block[0] & 0x80) != 0)
+      {
          output[15] ^= 0x87;
+      }
+
       return output;
    }
 
+   // --- key plumbing --------------------------------------------------------
+
    private static byte[] GetKeyBytes(string? overrideKey)
    {
-      if (!string.IsNullOrEmpty(overrideKey))
+      if (string.IsNullOrEmpty(overrideKey))
       {
-         ValidateKey(overrideKey);
-         return Convert.FromBase64String(overrideKey);
+         return GlobalKey is null
+            ? throw new InvalidOperationException("AES256 Key not configured. Call RegisterKey(...) or provide a key.")
+            : Convert.FromBase64String(GlobalKey);
       }
 
-      if (GlobalKey is null)
-      {
-         throw new InvalidOperationException("AES256 Key not configured. Call RegisterKey(...) or provide a key.");
-      }
-
-      return Convert.FromBase64String(GlobalKey);
+      ValidateKey(overrideKey);
+      return Convert.FromBase64String(overrideKey);
    }
 
    private static void ValidateKey([NotNull] string? key)
    {
       if (string.IsNullOrWhiteSpace(key) || !IsBase64String(key))
+      {
          throw new ArgumentException("Key must be valid Base64.");
+      }
+
       if (Convert.FromBase64String(key)
                  .Length != 32)
+      {
          throw new ArgumentException("Key must be 32 bytes (256 bits).");
+      }
    }
 
    private static bool IsBase64String(string input)
