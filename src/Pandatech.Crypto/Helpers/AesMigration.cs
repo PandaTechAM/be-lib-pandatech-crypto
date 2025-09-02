@@ -37,14 +37,14 @@ public static class AesMigration
 
       var plaintext = Aes256.Decrypt(oldCiphertext);
 
-      return Aes256Siv.Encrypt(plaintext);
+      return Aes256SivLegacy.Encrypt(plaintext);
    }
 
    public static byte[] MigrateFromOldHashed(byte[] oldCiphertext)
    {
       var plaintext = Aes256.Decrypt(oldCiphertext);
 
-      return Aes256Siv.Encrypt(plaintext);
+      return Aes256SivLegacy.Encrypt(plaintext);
    }
 
    public static byte[]? MigrateFromOldNonHashedNullable(byte[]? oldCiphertext)
@@ -56,7 +56,7 @@ public static class AesMigration
 
       var plaintext = Aes256.DecryptWithoutHash(oldCiphertext);
 
-      return Aes256Siv.Encrypt(plaintext);
+      return Aes256SivLegacy.Encrypt(plaintext);
    }
 
 
@@ -64,6 +64,6 @@ public static class AesMigration
    {
       var plaintext = Aes256.DecryptWithoutHash(oldCiphertext);
 
-      return Aes256Siv.Encrypt(plaintext);
+      return Aes256SivLegacy.Encrypt(plaintext);
    }
 }

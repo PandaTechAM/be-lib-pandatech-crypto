@@ -11,7 +11,7 @@ public class AesMigrationTests
    {
       var key = Random.GenerateAes256KeyString();
       Aes256.RegisterKey(key);
-      Aes256Siv.RegisterKey(key);
+      Aes256SivLegacy.RegisterKey(key);
    }
 
    [Fact]
@@ -25,7 +25,7 @@ public class AesMigrationTests
       var newCiphertext = AesMigration.MigrateFromOldHashed(oldCiphertext);
 
       // Decrypt new ciphertext with SIV
-      var decrypted = Aes256Siv.Decrypt(newCiphertext);
+      var decrypted = Aes256SivLegacy.Decrypt(newCiphertext);
       Assert.Equal(originalText, decrypted);
    }
 
@@ -40,7 +40,7 @@ public class AesMigrationTests
       var newCiphertext = AesMigration.MigrateFromOldNonHashed(oldCiphertext);
 
       // Decrypt new ciphertext with SIV
-      var decrypted = Aes256Siv.Decrypt(newCiphertext);
+      var decrypted = Aes256SivLegacy.Decrypt(newCiphertext);
       Assert.Equal(originalText, decrypted);
    }
 
@@ -76,7 +76,7 @@ public class AesMigrationTests
       var newCipherList = AesMigration.MigrateFromOldHashed(oldCipherList);
 
       var decryptedList = newCipherList
-                          .Select(nc => Aes256Siv.Decrypt(nc))
+                          .Select(nc => Aes256SivLegacy.Decrypt(nc))
                           .ToArray();
 
       for (var i = 0; i < plaintexts.Length; i++)
@@ -101,7 +101,7 @@ public class AesMigrationTests
       var newCipherList = AesMigration.MigrateFromOldNonHashed(oldCipherList);
 
       var decryptedList = newCipherList
-                          .Select(nc => Aes256Siv.Decrypt(nc))
+                          .Select(nc => Aes256SivLegacy.Decrypt(nc))
                           .ToArray();
 
       Assert.Equal(plaintexts, decryptedList);
@@ -124,7 +124,7 @@ public class AesMigrationTests
       var newCipherList = AesMigration.MigrateFromOldHashedNullable(oldCipherList);
 
       var decryptedList = newCipherList
-                          .Select(nc => nc == null ? null : Aes256Siv.Decrypt(nc))
+                          .Select(nc => nc == null ? null : Aes256SivLegacy.Decrypt(nc))
                           .ToArray();
 
       Assert.Equal(plaintexts, decryptedList);
@@ -146,7 +146,7 @@ public class AesMigrationTests
       var newCipherList = AesMigration.MigrateFromOldNonHashedNullable(oldCipherList);
 
       var decryptedList = newCipherList
-                          .Select(nc => nc == null ? null : Aes256Siv.Decrypt(nc))
+                          .Select(nc => nc == null ? null : Aes256SivLegacy.Decrypt(nc))
                           .ToArray();
 
       Assert.Equal(plaintexts, decryptedList);
