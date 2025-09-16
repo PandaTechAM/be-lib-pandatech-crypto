@@ -14,6 +14,7 @@ scattered code to handle everyday cryptographic tasks. The library provides an *
 - Secure random generation,
 - Password validation/strength checks,
 - Masking of sensitive data.
+- JOSE (**JWE only**): simple sealed-envelope encryption (RSA-OAEP-256 + AES-256-GCM) with JWK + `kid` thumbprint.
 
 Whether you need to **encrypt data**, **hash passwords**, or **generate secure random tokens**, PandaTech.Crypto
 provides lightweight abstractions over popular cryptographic solutions, ensuring simplicity and usability without
@@ -203,6 +204,35 @@ byte[] newCipher = AesMigration.MigrateFromOldNonHashed(oldCiphertext);
 ```
 
 The library provides nullable-friendly variants too (`MigrateFromOldHashedNullable`, etc.).
+
+### JoseJwe — Simple JWE (RSA-OAEP-256 + A256GCM)
+
+Confidentiality-only envelopes using JOSE **JWE** (no signatures). Keys are **RSA JWKs**, and `kid` is the **RFC 7638
+thumbprint** of the public JWK.
+
+```csharp
+using Pandatech.Crypto.Helpers;
+using System.Text;
+
+// 1) Issue RSA keys (2048+)
+// returns public/private JWKs and kid (thumbprint of public JWK)
+var (publicJwk, privateJwk, kid) = JoseJwe.IssueKeys();
+
+// 2) Encrypt to recipient’s public key (header includes kid)
+var plaintext = Encoding.UTF8.GetBytes("hello");
+var jwe = JoseJwe.Encrypt(publicJwk, plaintext, kid);
+
+// 3) Decrypt with recipient’s private key
+if (JoseJwe.TryDecrypt(privateJwk, jwe, out var bytes))
+{
+   var text = Encoding.UTF8.GetString(bytes);
+}
+```
+
+#### Security notes
+- RSA key **size ≥ 2048** bits (enforced).
+- `kid` must match the supplied `publicJwk` (enforced).
+- This is **encryption only** (no authenticity). If you need signing later, add JWS separately.
 
 ### Argon2id Class
 
