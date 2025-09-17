@@ -10,6 +10,7 @@ using Org.BouncyCastle.Utilities;
 
 namespace Pandatech.Crypto.Helpers;
 
+[Obsolete("This is a legacy implementation of AES256-SIV. Use Aes256Siv instead.", false)]
 public static class Aes256SivLegacy
 {
    private static string? GlobalKey { get; set; }

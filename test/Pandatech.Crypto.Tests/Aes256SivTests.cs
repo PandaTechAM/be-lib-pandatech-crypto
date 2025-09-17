@@ -42,7 +42,7 @@ public class Aes256SivTests
     public void EmptyInput_Produces16ByteV_AndDecryptsToEmpty()
     {
         var key = Key();
-        var c = Aes256Siv.Encrypt(Array.Empty<byte>(), key);
+        var c = Aes256Siv.Encrypt([], key);
         Assert.Equal(16, c.Length); // V only
         var p = Aes256Siv.DecryptToBytes(c, key);
         Assert.Empty(p);

@@ -47,12 +47,12 @@ public static class Aes256Gcm
 
       using var aes = new AesGcm(k, TagSize);
 
-      var plain     = new byte[DefaultChunkSize];
-      var cipher    = new byte[DefaultChunkSize];   // <— you removed this; we need it
-      var tagBuf    = new byte[TagSize];
-      var nonceBuf  = new byte[NonceSize];
+      var plain = new byte[DefaultChunkSize];
+      var cipher = new byte[DefaultChunkSize]; // <— you removed this; we need it
+      var tagBuf = new byte[TagSize];
+      var nonceBuf = new byte[NonceSize];
       var frameLen4 = new byte[4];
-      var aadLen    = 5 + NonceSize + 4;
+      var aadLen = 5 + NonceSize + 4;
 
       ulong counter = 0;
       int read;
@@ -62,16 +62,16 @@ public static class Aes256Gcm
       {
          DeriveNonce(baseNonce, counter, nonceBuf);
 
-         var p   = plain.AsSpan(0, read);
-         var c   = cipher.AsSpan(0, read);
+         var p = plain.AsSpan(0, read);
+         var c = cipher.AsSpan(0, read);
          var tag = tagBuf.AsSpan();
 
          aes.Encrypt(nonceBuf, p, c, tag, header[..aadLen]);
 
          BinaryPrimitives.WriteUInt32LittleEndian(frameLen4, (uint)read);
-         output.Write(frameLen4);   // len
-         output.Write(tagBuf);      // tag
-         output.Write(c);           // ciphertext
+         output.Write(frameLen4); // len
+         output.Write(tagBuf); // tag
+         output.Write(c); // ciphertext
 
          counter++;
       }
