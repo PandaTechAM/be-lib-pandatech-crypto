@@ -8,12 +8,12 @@
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>6.1.0</Version>
+        <Version>6.1.1</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>Easy Jose interface added. Refer to readme.md for changes</PackageReleaseNotes>
+        <PackageReleaseNotes>On empty Aes256 Siv return null instead of throwing</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
