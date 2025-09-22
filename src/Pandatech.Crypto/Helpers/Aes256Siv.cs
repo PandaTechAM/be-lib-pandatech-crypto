@@ -47,8 +47,12 @@ public static class Aes256Siv
 
    public static byte[] DecryptToBytes(byte[] ciphertext, string? key)
    {
+      if (ciphertext.Length < 16)
+      {
+         return [];
+      }
+
       var keyBytes = GetKeyBytes(key);
-      if (ciphertext.Length < 16) throw new ArgumentException("At least 16 bytes are required for the SIV.");
 
       var macKey = keyBytes.AsSpan(0, 16);
       var encKey = keyBytes.AsSpan(16, 16);
