@@ -138,7 +138,10 @@ public static class Aes256SivLegacy
          var block = new byte[16];
          Array.Copy(data, data.Length - 16, block, 0, 16);
          for (var i = 0; i < 16; i++)
+         {
             block[i] ^= D[i];
+         }
+
          return CmacHash(cmac, block);
       }
       else
@@ -146,7 +149,10 @@ public static class Aes256SivLegacy
          D = DoubleBlock(D);
          var block = Pad(data);
          for (var i = 0; i < 16; i++)
+         {
             block[i] ^= D[i];
+         }
+
          return CmacHash(cmac, block);
       }
    }
@@ -188,7 +194,10 @@ public static class Aes256SivLegacy
       }
 
       if ((block[0] & 0x80) != 0)
+      {
          output[15] ^= 0x87;
+      }
+
       return output;
    }
 
@@ -211,10 +220,15 @@ public static class Aes256SivLegacy
    private static void ValidateKey([NotNull] string? key)
    {
       if (string.IsNullOrWhiteSpace(key) || !IsBase64String(key))
+      {
          throw new ArgumentException("Key must be valid Base64.");
+      }
+
       if (Convert.FromBase64String(key)
                  .Length != 32)
+      {
          throw new ArgumentException("Key must be 32 bytes (256 bits).");
+      }
    }
 
    private static bool IsBase64String(string input)

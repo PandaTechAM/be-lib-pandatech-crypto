@@ -17,19 +17,6 @@ public static class GZip
       inputStream.CopyTo(gzipStream);
    }
 
-   // New method to decompress data directly from one stream to another
-   public static void Decompress(Stream inputStream, Stream outputStream)
-   {
-      using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress, true);
-      gzipStream.CopyTo(outputStream);
-   }
-
-   public static byte[] Compress<T>(T obj)
-   {
-      var jsonString = JsonSerializer.Serialize(obj, JsonSerializerOptions);
-      return Compress(jsonString);
-   }
-
    public static byte[] Compress(string data)
    {
       using var memoryStream = new MemoryStream();
@@ -46,6 +33,13 @@ public static class GZip
       return compressedData;
    }
 
+   public static byte[] Compress<T>(T obj)
+   {
+      var jsonString = JsonSerializer.Serialize(obj, JsonSerializerOptions);
+      return Compress(jsonString);
+   }
+
+
    public static byte[] Compress(byte[] data)
    {
       using var memoryStream = new MemoryStream();
@@ -56,6 +50,14 @@ public static class GZip
 
       return memoryStream.ToArray();
    }
+
+   // New method to decompress data directly from one stream to another
+   public static void Decompress(Stream inputStream, Stream outputStream)
+   {
+      using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress, true);
+      gzipStream.CopyTo(outputStream);
+   }
+
 
    public static T? Decompress<T>(byte[] compressedData)
    {

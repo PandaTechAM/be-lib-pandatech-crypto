@@ -2,13 +2,15 @@
 using System.Text;
 using Pandatech.Crypto.Helpers;
 using Random = Pandatech.Crypto.Helpers.Random;
-using Xunit;
 
 namespace Pandatech.Crypto.Tests;
 
 public class Aes256GcmTests
 {
-   private static string Key() => Random.GenerateAes256KeyString();
+   private static string Key()
+   {
+      return Random.GenerateAes256KeyString();
+   }
 
    [Fact]
    public void EncryptDecryptStream_RoundTrip_SmallText()

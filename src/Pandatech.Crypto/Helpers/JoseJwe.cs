@@ -60,14 +60,21 @@ public static class JoseJwe
       }
    }
 
-   public static string ComputeKid(string publicJwk) => Thumbprint(publicJwk);
+   public static string ComputeKid(string publicJwk)
+   {
+      return Thumbprint(publicJwk);
+   }
 
    private static RSA ImportPublic(string jwkJson)
    {
       using var doc = JsonDocument.Parse(jwkJson);
       var r = doc.RootElement;
       if (r.GetProperty("kty")
-           .GetString() != "RSA") throw new ArgumentException("kty must be RSA.");
+           .GetString() != "RSA")
+      {
+         throw new ArgumentException("kty must be RSA.");
+      }
+
       var n = Base64Url.Decode(r.GetProperty("n")
                                 .GetString()!);
 

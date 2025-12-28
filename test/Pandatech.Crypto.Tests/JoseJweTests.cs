@@ -1,11 +1,10 @@
-﻿namespace Pandatech.Crypto.Tests;
-
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Jose;
-using Helpers;
-using Xunit;
+using Pandatech.Crypto.Helpers;
+
+namespace Pandatech.Crypto.Tests;
 
 public class JoseJweTests
 {
@@ -151,11 +150,30 @@ public class JoseJweTests
          ["e"] = Base64Url.Encode(p.Exponent!),
          ["d"] = Base64Url.Encode(p.D!)
       };
-      if (p.P is not null) o["p"] = Base64Url.Encode(p.P);
-      if (p.Q is not null) o["q"] = Base64Url.Encode(p.Q);
-      if (p.DP is not null) o["dp"] = Base64Url.Encode(p.DP);
-      if (p.DQ is not null) o["dq"] = Base64Url.Encode(p.DQ);
-      if (p.InverseQ is not null) o["qi"] = Base64Url.Encode(p.InverseQ);
+      if (p.P is not null)
+      {
+         o["p"] = Base64Url.Encode(p.P);
+      }
+
+      if (p.Q is not null)
+      {
+         o["q"] = Base64Url.Encode(p.Q);
+      }
+
+      if (p.DP is not null)
+      {
+         o["dp"] = Base64Url.Encode(p.DP);
+      }
+
+      if (p.DQ is not null)
+      {
+         o["dq"] = Base64Url.Encode(p.DQ);
+      }
+
+      if (p.InverseQ is not null)
+      {
+         o["qi"] = Base64Url.Encode(p.InverseQ);
+      }
 
       return JsonSerializer.Serialize(o);
    }

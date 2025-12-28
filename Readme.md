@@ -230,6 +230,7 @@ if (JoseJwe.TryDecrypt(privateJwk, jwe, out var bytes))
 ```
 
 #### Security notes
+
 - RSA key **size ≥ 2048** bits (enforced).
 - `kid` must match the supplied `publicJwk` (enforced).
 - This is **encryption only** (no authenticity). If you need signing later, add JWS separately.

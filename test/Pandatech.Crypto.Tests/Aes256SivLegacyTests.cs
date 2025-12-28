@@ -35,7 +35,7 @@ public class Aes256SivLegacyTests
 
       var encryptedBytesToString = Encoding.UTF8.GetString(encrypted);
       // Assert
-   
+
       Assert.NotEqual(original, encryptedBytesToString);
       Assert.Equal(original, decrypted);
    }
@@ -223,7 +223,7 @@ public class Aes256SivLegacyTests
       // Act & Assert
       Assert.Throws<ArgumentException>(() => Aes256SivLegacy.Decrypt(input, output, invalidKey));
    }
-   
+
    [Fact]
    public void ExportImport_Base64Utf8_RoundTrip_Succeeds()
    {
@@ -232,14 +232,14 @@ public class Aes256SivLegacyTests
       const string original = "Payload with ünicode 🌐 and line\r\nbreaks";
 
       // --- export side ----------------------------------------------------
-      var cipher        = Aes256SivLegacy.Encrypt(original, key);          // byte[]
-      var base64        = Convert.ToBase64String(cipher);            // string
-      var fileBytes     = Encoding.UTF8.GetBytes(base64);            // byte[]
+      var cipher = Aes256SivLegacy.Encrypt(original, key); // byte[]
+      var base64 = Convert.ToBase64String(cipher); // string
+      var fileBytes = Encoding.UTF8.GetBytes(base64); // byte[]
 
       // --- import side ----------------------------------------------------
-      var base64FromFile = Encoding.UTF8.GetString(fileBytes);       // string
+      var base64FromFile = Encoding.UTF8.GetString(fileBytes); // string
       var cipherFromFile = Convert.FromBase64String(base64FromFile); // byte[]
-      var decrypted      = Aes256SivLegacy.Decrypt(cipherFromFile, key);   // string
+      var decrypted = Aes256SivLegacy.Decrypt(cipherFromFile, key); // string
 
       // Assert
       Assert.Equal(original, decrypted);
@@ -262,7 +262,4 @@ public class Aes256SivLegacyTests
       // Assert
       Assert.Equal(original, decrypted);
    }
-
-  
-
 }

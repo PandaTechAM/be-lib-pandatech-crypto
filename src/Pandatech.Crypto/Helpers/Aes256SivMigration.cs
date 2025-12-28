@@ -4,19 +4,26 @@
 public static class AesSivMigration
 {
    // -------------------- batch (nullable) --------------------
-   public static List<byte[]?> MigrateNullable(IEnumerable<byte[]?> oldCiphertexts) =>
-      oldCiphertexts.Select(MigrateNullable)
-                    .ToList();
+   public static List<byte[]?> MigrateNullable(IEnumerable<byte[]?> oldCiphertexts)
+   {
+      return oldCiphertexts.Select(MigrateNullable)
+                           .ToList();
+   }
 
    // -------------------- batch (non-nullable) ----------------
-   public static List<byte[]> Migrate(IEnumerable<byte[]> oldCiphertexts) =>
-      oldCiphertexts.Select(Migrate)
-                    .ToList();
+   public static List<byte[]> Migrate(IEnumerable<byte[]> oldCiphertexts)
+   {
+      return oldCiphertexts.Select(Migrate)
+                           .ToList();
+   }
 
    // -------------------- single (nullable) -------------------
    public static byte[]? MigrateNullable(byte[]? oldCiphertext)
    {
-      if (oldCiphertext is null) return null;
+      if (oldCiphertext is null)
+      {
+         return null;
+      }
 
       // decrypt with legacy (string API) -> re-encrypt with RFC-correct Aes256Siv
       var plaintext = Aes256SivLegacy.Decrypt(oldCiphertext);

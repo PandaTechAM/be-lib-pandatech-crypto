@@ -1,13 +1,15 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
 using Pandatech.Crypto.Helpers;
 using Random = Pandatech.Crypto.Helpers.Random;
-using Xunit;
 
 namespace Pandatech.Crypto.Tests;
 
 public class AesSivMigrationTests
 {
-   private static string Key() => Random.GenerateAes256KeyString();
+   private static string Key()
+   {
+      return Random.GenerateAes256KeyString();
+   }
 
    [Fact]
    public void Migrate_Single_RoundTrip_Works()
@@ -92,7 +94,7 @@ public class AesSivMigrationTests
       var legacy = Aes256SivLegacy.Encrypt("data");
       legacy[0] ^= 0x01; // corrupt V/tag in legacy payload
 
-      Assert.ThrowsAny<System.Security.Cryptography.CryptographicException>(() =>
+      Assert.ThrowsAny<CryptographicException>(() =>
       {
          _ = AesSivMigration.Migrate(legacy);
       });

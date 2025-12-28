@@ -22,7 +22,7 @@ public class Sha2Tests
       // Assert
       Assert.Equal(expectedHashHex, hashHex);
    }
-   
+
    [Fact]
    public void HmacSha256_ValidInput_ReturnsExpectedHash2()
    {
