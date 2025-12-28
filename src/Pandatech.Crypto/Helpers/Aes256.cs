@@ -17,23 +17,11 @@ public static class Aes256
       return EncryptWithHashInner(plainText);
    }
 
-   public static byte[] EncryptWithoutHash(string plainText)
-   {
-      return EncryptWithoutHashInner(plainText, null);
-   }
-
    public static byte[] Encrypt(string plainText, string key)
    {
       ValidateKey(key);
 
       return EncryptWithHashInner(plainText, key);
-   }
-
-   public static byte[] EncryptWithoutHash(string plainText, string key)
-   {
-      ValidateKey(key);
-
-      return EncryptWithoutHashInner(plainText, key);
    }
 
    public static void Encrypt(Stream inputStream, Stream outputStream, string? key = null)
@@ -52,6 +40,20 @@ public static class Aes256
       using var cryptoStream = new CryptoStream(outputStream, encryptor, CryptoStreamMode.Write, true);
       inputStream.CopyTo(cryptoStream);
    }
+
+   public static byte[] EncryptWithoutHash(string plainText)
+   {
+      return EncryptWithoutHashInner(plainText, null);
+   }
+
+
+   public static byte[] EncryptWithoutHash(string plainText, string key)
+   {
+      ValidateKey(key);
+
+      return EncryptWithoutHashInner(plainText, key);
+   }
+
 
    private static byte[] EncryptWithHashInner(string plainText, string? key = null)
    {
@@ -101,27 +103,12 @@ public static class Aes256
          : DecryptSkippingHashInner(cipherText);
    }
 
-   public static string DecryptWithoutHash(byte[] cipherText)
-   {
-      return cipherText.Length == 0
-         ? ""
-         : DecryptWithoutSkippingHashInner(cipherText, null);
-   }
-
    public static string Decrypt(byte[] cipherText, string key)
    {
       ValidateKey(key);
       return cipherText.Length == 0
          ? ""
          : DecryptSkippingHashInner(cipherText, key);
-   }
-
-   public static string DecryptWithoutHash(byte[] cipherText, string key)
-   {
-      ValidateKey(key);
-      return cipherText.Length == 0
-         ? ""
-         : DecryptWithoutSkippingHashInner(cipherText, key);
    }
 
    public static void Decrypt(Stream inputStream, Stream outputStream, string? key = null)
@@ -145,6 +132,23 @@ public static class Aes256
       using var cryptoStream = new CryptoStream(inputStream, decryptor, CryptoStreamMode.Read, true);
       cryptoStream.CopyTo(outputStream);
    }
+
+   public static string DecryptWithoutHash(byte[] cipherText)
+   {
+      return cipherText.Length == 0
+         ? ""
+         : DecryptWithoutSkippingHashInner(cipherText, null);
+   }
+
+
+   public static string DecryptWithoutHash(byte[] cipherText, string key)
+   {
+      ValidateKey(key);
+      return cipherText.Length == 0
+         ? ""
+         : DecryptWithoutSkippingHashInner(cipherText, key);
+   }
+
 
    private static string DecryptWithoutSkippingHashInner(byte[] cipherText, string? key)
    {

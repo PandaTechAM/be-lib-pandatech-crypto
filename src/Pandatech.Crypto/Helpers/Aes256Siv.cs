@@ -22,9 +22,20 @@ public static class Aes256Siv
 
    // --- Simple API (no AD) -------------------------------------------------
 
-   public static byte[] Encrypt(string plaintext) => Encrypt(Encoding.UTF8.GetBytes(plaintext), null);
-   public static byte[] Encrypt(string plaintext, string? key) => Encrypt(Encoding.UTF8.GetBytes(plaintext), key);
-   public static byte[] Encrypt(byte[] plaintext) => Encrypt(plaintext, null);
+   public static byte[] Encrypt(string plaintext)
+   {
+      return Encrypt(Encoding.UTF8.GetBytes(plaintext), null);
+   }
+
+   public static byte[] Encrypt(string plaintext, string? key)
+   {
+      return Encrypt(Encoding.UTF8.GetBytes(plaintext), key);
+   }
+
+   public static byte[] Encrypt(byte[] plaintext)
+   {
+      return Encrypt(plaintext, null);
+   }
 
    public static byte[] Encrypt(byte[] plaintext, string? key)
    {
@@ -38,12 +49,20 @@ public static class Aes256Siv
       return Arrays.Concatenate(v, c);
    }
 
-   public static string Decrypt(byte[] ciphertext) => Decrypt(ciphertext, null);
+   public static string Decrypt(byte[] ciphertext)
+   {
+      return Decrypt(ciphertext, null);
+   }
 
-   public static string Decrypt(byte[] ciphertext, string? key) =>
-      Encoding.UTF8.GetString(DecryptToBytes(ciphertext, key));
+   public static string Decrypt(byte[] ciphertext, string? key)
+   {
+      return Encoding.UTF8.GetString(DecryptToBytes(ciphertext, key));
+   }
 
-   public static byte[] DecryptToBytes(byte[] ciphertext) => DecryptToBytes(ciphertext, null);
+   public static byte[] DecryptToBytes(byte[] ciphertext)
+   {
+      return DecryptToBytes(ciphertext, null);
+   }
 
    public static byte[] DecryptToBytes(byte[] ciphertext, string? key)
    {

@@ -11,11 +11,11 @@ public static class Aes256Gcm
    private const int TagSize = 16; // 128-bit tag
    private const int DefaultChunkSize = 64 * 1024;
 
+   private const byte Version = 1;
+
    // [Magic: 'PGCM'][Version:1][BaseNonce:12][ChunkSize:4 LE]
    // Frames: [PlainLen:4 LE][Tag:16][Ciphertext:PlainLen]
    private static readonly byte[] Magic = "PGCM"u8.ToArray();
-
-   private const byte Version = 1;
 
    private static string? GlobalKey { get; set; }
 
@@ -25,7 +25,10 @@ public static class Aes256Gcm
       GlobalKey = key;
    }
 
-   public static void Encrypt(Stream input, Stream output) => Encrypt(input, output, null);
+   public static void Encrypt(Stream input, Stream output)
+   {
+      Encrypt(input, output, null);
+   }
 
    public static void Encrypt(Stream input, Stream output, string? key)
    {
@@ -42,7 +45,7 @@ public static class Aes256Gcm
       Magic.CopyTo(header);
       header[4] = Version;
       baseNonce.CopyTo(header.Slice(5, NonceSize));
-      BinaryPrimitives.WriteUInt32LittleEndian(header.Slice(5 + NonceSize, 4), (uint)DefaultChunkSize);
+      BinaryPrimitives.WriteUInt32LittleEndian(header.Slice(5 + NonceSize, 4), DefaultChunkSize);
       output.Write(header);
 
       using var aes = new AesGcm(k, TagSize);
@@ -90,7 +93,10 @@ public static class Aes256Gcm
    }
 
 
-   public static void Decrypt(Stream input, Stream output) => Decrypt(input, output, null);
+   public static void Decrypt(Stream input, Stream output)
+   {
+      Decrypt(input, output, null);
+   }
 
    public static void Decrypt(Stream input, Stream output, string? key)
    {
@@ -118,7 +124,9 @@ public static class Aes256Gcm
                             .ToArray();
       var chunkSize = BinaryPrimitives.ReadUInt32LittleEndian(header.Slice(5 + NonceSize, 4));
       if (chunkSize == 0 || chunkSize > 16 * 1024 * 1024)
+      {
          throw new CryptographicException("Invalid chunk size.");
+      }
 
       using var aes = new AesGcm(k, TagSize);
 
@@ -136,14 +144,20 @@ public static class Aes256Gcm
       {
          var got = input.Read(lenBuf4);
          if (got == 0)
+         {
             break; // we’ll check sawTerminal below
+         }
 
          if (got != 4)
+         {
             throw new CryptographicException("Truncated frame.");
+         }
 
          var len = BinaryPrimitives.ReadUInt32LittleEndian(lenBuf4);
          if (len > chunkSize)
+         {
             throw new CryptographicException("Frame too large.");
+         }
 
          ReadExactly(input, tagBuf);
 
@@ -162,7 +176,9 @@ public static class Aes256Gcm
 
             // after terminal, there MUST be no extra data
             if (input.Read(lenBuf4) != 0)
+            {
                throw new CryptographicException("Trailing data after terminal frame.");
+            }
 
             break;
          }
@@ -178,7 +194,9 @@ public static class Aes256Gcm
       }
 
       if (!sawTerminal)
+      {
          throw new CryptographicException("Missing terminal authentication frame.");
+      }
    }
 
    private static void DeriveNonce(ReadOnlySpan<byte> baseNonce, ulong counter, Span<byte> outNonce)
@@ -198,7 +216,11 @@ public static class Aes256Gcm
       while (total < buffer.Length)
       {
          var r = s.Read(buffer.Slice(total));
-         if (r == 0) throw new CryptographicException("Truncated input.");
+         if (r == 0)
+         {
+            throw new CryptographicException("Truncated input.");
+         }
+
          total += r;
       }
    }

@@ -1,19 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>6.1.1</Version>
+        <Version>7.0.0</Version>
         <Title>Pandatech.Crypto</Title>
         <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
         <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>On empty Aes256 Siv return null instead of throwing</PackageReleaseNotes>
+        <PackageReleaseNotes>dotnet 10 upgrade</PackageReleaseNotes>
+
+        <!-- Never run analyzers as part of compilation (local, CI, dotnet build/test/publish) -->
+        <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+
+        <!-- Keep background/live analysis in the IDE -->
+        <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+
+        <!-- Optional: ensure code-style analyzers don't run during build either -->
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,9 +32,14 @@
 
     <ItemGroup>
         <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1"/>
-        <PackageReference Include="jose-jwt" Version="5.2.0" />
+        <PackageReference Include="jose-jwt" Version="5.2.0"/>
         <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1"/>
+        <PackageReference Include="Pandatech.Analyzers" Version="1.6.0"/>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.17.0.131074">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>
