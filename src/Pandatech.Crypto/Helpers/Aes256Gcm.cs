@@ -1,15 +1,20 @@
-﻿using System.Buffers.Binary;
+﻿using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 
 namespace Pandatech.Crypto.Helpers;
 
+/// <summary>
+/// AES-256-GCM authenticated encryption for streams with chunked framing.
+/// Perfect for files: images, videos, PDFs, etc.
+/// </summary>
 public static class Aes256Gcm
 {
    private const int KeySize = 32; // 256-bit
    private const int NonceSize = 12; // GCM recommended
    private const int TagSize = 16; // 128-bit tag
-   private const int DefaultChunkSize = 64 * 1024;
+   private const int DefaultChunkSize = 64 * 1024; // 64 KiB
 
    private const byte Version = 1;
 
@@ -19,17 +24,26 @@ public static class Aes256Gcm
 
    private static string? GlobalKey { get; set; }
 
+   /// <summary>
+   /// Register a global AES-256 key (base64-encoded, 32 bytes).
+   /// </summary>
    internal static void RegisterKey(string key)
    {
       ValidateKey(key);
       GlobalKey = key;
    }
 
+   /// <summary>
+   /// Encrypt a stream using AES-256-GCM with the registered global key.
+   /// </summary>
    public static void Encrypt(Stream input, Stream output)
    {
       Encrypt(input, output, null);
    }
 
+   /// <summary>
+   /// Encrypt a stream using AES-256-GCM with an optional override key.
+   /// </summary>
    public static void Encrypt(Stream input, Stream output, string? key)
    {
       ArgumentNullException.ThrowIfNull(input);
@@ -40,7 +54,7 @@ public static class Aes256Gcm
       Span<byte> baseNonce = stackalloc byte[NonceSize];
       RandomNumberGenerator.Fill(baseNonce);
 
-      // header
+      // Write header
       Span<byte> header = stackalloc byte[Magic.Length + 1 + NonceSize + 4];
       Magic.CopyTo(header);
       header[4] = Version;
@@ -50,54 +64,68 @@ public static class Aes256Gcm
 
       using var aes = new AesGcm(k, TagSize);
 
-      var plain = new byte[DefaultChunkSize];
-      var cipher = new byte[DefaultChunkSize]; // <— you removed this; we need it
-      var tagBuf = new byte[TagSize];
-      var nonceBuf = new byte[NonceSize];
-      var frameLen4 = new byte[4];
-      var aadLen = 5 + NonceSize + 4;
-
-      ulong counter = 0;
-      int read;
-
-      // --- data frames ---
-      while ((read = input.Read(plain, 0, plain.Length)) > 0)
+      // Rent buffers from pool to reduce allocations
+      var plainBuffer = ArrayPool<byte>.Shared.Rent(DefaultChunkSize);
+      var cipherBuffer = ArrayPool<byte>.Shared.Rent(DefaultChunkSize);
+      
+      try
       {
+         var tagBuf = new byte[TagSize];
+         var nonceBuf = new byte[NonceSize];
+         var frameLen4 = new byte[4];
+         var aadLen = 5 + NonceSize + 4;
+
+         ulong counter = 0;
+         int read;
+
+         // Data frames
+         while ((read = input.Read(plainBuffer, 0, DefaultChunkSize)) > 0)
+         {
+            DeriveNonce(baseNonce, counter, nonceBuf);
+
+            var p = plainBuffer.AsSpan(0, read);
+            var c = cipherBuffer.AsSpan(0, read);
+
+            aes.Encrypt(nonceBuf, p, c, tagBuf, header[..aadLen]);
+
+            BinaryPrimitives.WriteUInt32LittleEndian(frameLen4, (uint)read);
+            output.Write(frameLen4);
+            output.Write(tagBuf);
+            output.Write(c);
+
+            counter++;
+         }
+
+         // Terminal 0-length authenticated frame
          DeriveNonce(baseNonce, counter, nonceBuf);
+         aes.Encrypt(nonceBuf,
+            ReadOnlySpan<byte>.Empty,
+            Span<byte>.Empty,
+            tagBuf,
+            header[..aadLen]);
 
-         var p = plain.AsSpan(0, read);
-         var c = cipher.AsSpan(0, read);
-         var tag = tagBuf.AsSpan();
-
-         aes.Encrypt(nonceBuf, p, c, tag, header[..aadLen]);
-
-         BinaryPrimitives.WriteUInt32LittleEndian(frameLen4, (uint)read);
-         output.Write(frameLen4); // len
-         output.Write(tagBuf); // tag
-         output.Write(c); // ciphertext
-
-         counter++;
+         BinaryPrimitives.WriteUInt32LittleEndian(frameLen4, 0u);
+         output.Write(frameLen4);
+         output.Write(tagBuf);
       }
-
-      // --- single terminal 0-length authenticated frame ---
-      DeriveNonce(baseNonce, counter, nonceBuf);
-      aes.Encrypt(nonceBuf,
-         ReadOnlySpan<byte>.Empty,
-         Span<byte>.Empty,
-         tagBuf,
-         header[..aadLen]);
-
-      BinaryPrimitives.WriteUInt32LittleEndian(frameLen4, 0u);
-      output.Write(frameLen4);
-      output.Write(tagBuf);
+      finally
+      {
+         ArrayPool<byte>.Shared.Return(plainBuffer);
+         ArrayPool<byte>.Shared.Return(cipherBuffer);
+      }
    }
 
-
+   /// <summary>
+   /// Decrypt a stream using AES-256-GCM with the registered global key.
+   /// </summary>
    public static void Decrypt(Stream input, Stream output)
    {
       Decrypt(input, output, null);
    }
 
+   /// <summary>
+   /// Decrypt a stream using AES-256-GCM with an optional override key.
+   /// </summary>
    public static void Decrypt(Stream input, Stream output, string? key)
    {
       ArgumentNullException.ThrowIfNull(input);
@@ -105,12 +133,11 @@ public static class Aes256Gcm
 
       var k = GetKeyBytes(key);
 
-      // header (single stackalloc outside loops)
+      // Read and validate header
       Span<byte> header = stackalloc byte[Magic.Length + 1 + NonceSize + 4];
       ReadExactly(input, header);
 
-      if (!header[..4]
-             .SequenceEqual(Magic))
+      if (!header[..4].SequenceEqual(Magic))
       {
          throw new CryptographicException("Invalid header.");
       }
@@ -120,9 +147,9 @@ public static class Aes256Gcm
          throw new CryptographicException("Unsupported version.");
       }
 
-      var baseNonce = header.Slice(5, NonceSize)
-                            .ToArray();
+      var baseNonce = header.Slice(5, NonceSize).ToArray();
       var chunkSize = BinaryPrimitives.ReadUInt32LittleEndian(header.Slice(5 + NonceSize, 4));
+      
       if (chunkSize == 0 || chunkSize > 16 * 1024 * 1024)
       {
          throw new CryptographicException("Invalid chunk size.");
@@ -130,78 +157,86 @@ public static class Aes256Gcm
 
       using var aes = new AesGcm(k, TagSize);
 
-      var cipher = new byte[chunkSize];
-      var plain = new byte[chunkSize];
-      var tagBuf = new byte[TagSize];
-      var nonceBuf = new byte[NonceSize];
-      var lenBuf4 = new byte[4];
-      var aadLen = 5 + NonceSize + 4;
-
-      ulong counter = 0;
-      var sawTerminal = false;
-
-      while (true)
+      // Rent buffers from pool
+      var cipherBuffer = ArrayPool<byte>.Shared.Rent((int)chunkSize);
+      var plainBuffer = ArrayPool<byte>.Shared.Rent((int)chunkSize);
+      
+      try
       {
-         var got = input.Read(lenBuf4);
-         if (got == 0)
+         var tagBuf = new byte[TagSize];
+         var nonceBuf = new byte[NonceSize];
+         var lenBuf4 = new byte[4];
+         var aadLen = 5 + NonceSize + 4;
+
+         ulong counter = 0;
+         var sawTerminal = false;
+
+         while (true)
          {
-            break; // we’ll check sawTerminal below
-         }
-
-         if (got != 4)
-         {
-            throw new CryptographicException("Truncated frame.");
-         }
-
-         var len = BinaryPrimitives.ReadUInt32LittleEndian(lenBuf4);
-         if (len > chunkSize)
-         {
-            throw new CryptographicException("Frame too large.");
-         }
-
-         ReadExactly(input, tagBuf);
-
-         DeriveNonce(baseNonce, counter, nonceBuf);
-
-         if (len == 0)
-         {
-            // terminal frame: verify tag on empty payload
-            aes.Decrypt(nonceBuf,
-               ReadOnlySpan<byte>.Empty,
-               tagBuf,
-               Span<byte>.Empty,
-               header[..aadLen]);
-
-            sawTerminal = true;
-
-            // after terminal, there MUST be no extra data
-            if (input.Read(lenBuf4) != 0)
+            var got = input.Read(lenBuf4);
+            if (got == 0)
             {
-               throw new CryptographicException("Trailing data after terminal frame.");
+               break;
             }
 
-            break;
+            if (got != 4)
+            {
+               throw new CryptographicException("Truncated frame.");
+            }
+
+            var len = BinaryPrimitives.ReadUInt32LittleEndian(lenBuf4);
+            if (len > chunkSize)
+            {
+               throw new CryptographicException("Frame too large.");
+            }
+
+            ReadExactly(input, tagBuf);
+            DeriveNonce(baseNonce, counter, nonceBuf);
+
+            if (len == 0)
+            {
+               // Terminal frame: verify tag on empty payload
+               aes.Decrypt(nonceBuf,
+                  ReadOnlySpan<byte>.Empty,
+                  tagBuf,
+                  Span<byte>.Empty,
+                  header[..aadLen]);
+
+               sawTerminal = true;
+
+               // After terminal, there MUST be no extra data
+               if (input.Read(lenBuf4) != 0)
+               {
+                  throw new CryptographicException("Trailing data after terminal frame.");
+               }
+
+               break;
+            }
+
+            var c = cipherBuffer.AsSpan(0, (int)len);
+            ReadExactly(input, c);
+
+            var p = plainBuffer.AsSpan(0, (int)len);
+            aes.Decrypt(nonceBuf, c, tagBuf, p, header[..aadLen]);
+            output.Write(p);
+
+            counter++;
          }
 
-         var c = cipher.AsSpan(0, (int)len);
-         ReadExactly(input, c);
-
-         var p = plain.AsSpan(0, (int)len);
-         aes.Decrypt(nonceBuf, c, tagBuf, p, header[..aadLen]);
-         output.Write(p);
-
-         counter++;
+         if (!sawTerminal)
+         {
+            throw new CryptographicException("Missing terminal authentication frame.");
+         }
       }
-
-      if (!sawTerminal)
+      finally
       {
-         throw new CryptographicException("Missing terminal authentication frame.");
+         ArrayPool<byte>.Shared.Return(cipherBuffer);
+         ArrayPool<byte>.Shared.Return(plainBuffer);
       }
    }
 
    private static void DeriveNonce(ReadOnlySpan<byte> baseNonce, ulong counter, Span<byte> outNonce)
    {
-      // outNonce = baseNonce; then XOR LE64(counter) into last 8 bytes — no temporaries.
       baseNonce.CopyTo(outNonce);
       for (var i = 0; i < 8; i++)
       {
@@ -245,8 +280,7 @@ public static class Aes256Gcm
          throw new ArgumentException("Key must be valid Base64.");
       }
 
-      if (Convert.FromBase64String(key)
-                 .Length != KeySize)
+      if (Convert.FromBase64String(key).Length != KeySize)
       {
          throw new ArgumentException("Key must be 32 bytes (256 bits).");
       }
