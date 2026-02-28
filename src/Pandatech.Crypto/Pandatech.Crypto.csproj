@@ -1,42 +1,59 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <IsPackable>true</IsPackable>
+
         <Authors>Pandatech</Authors>
-        <Copyright>MIT</Copyright>
-        <PackageIcon>pandatech.png</PackageIcon>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Version>7.1.0</Version>
-        <Title>Pandatech.Crypto</Title>
-        <PackageTags>Pandatech, library, encryption, hash, algorythms, security</PackageTags>
-        <Description>PandaTech.Crypto is a .NET library simplifying common cryptograhic functions.</Description>
+        <Description>Unified cryptographic wrapper for .NET 8+ providing AES-256-GCM/SIV encryption, Argon2id password hashing, JWE envelope encryption, SHA-2/SHA-3 hashing, GZip compression, secure random generation, and PII masking utilities.</Description>
+        <PackageTags>cryptography;encryption;aes;aes-gcm;aes-siv;argon2;argon2id;password-hashing;sha256;sha3;hmac;jwe;jose;jwk;gzip;compression;random;security;pii-masking</PackageTags>
+
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</RepositoryUrl>
-        <PackageReleaseNotes>nuget updates</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/PandaTechAM/be-lib-pandatech-crypto</PackageProjectUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-        <!-- Never run analyzers as part of compilation (local, CI, dotnet build/test/publish) -->
+        <PackageIcon>pandatech.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <Version>8.0.0</Version>
+        <PackageReleaseNotes>Major modernization: multi-target net8.0/9.0/10.0, framework-first dependencies, optimized allocations, updated package metadata</PackageReleaseNotes>
+
+        <!-- Build quality -->
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Source/symbols -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+        <!-- Analyzer behavior -->
         <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-
-        <!-- Keep background/live analysis in the IDE -->
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-
-        <!-- Optional: ensure code-style analyzers don't run during build either -->
         <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="..\..\pandatech.png" Pack="true" PackagePath="\"/>
-        <None Include="..\..\Readme.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <!-- ASP.NET Core integration for WebApplicationBuilder extensions -->
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1"/>
         <PackageReference Include="jose-jwt" Version="5.2.0"/>
         <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
-        <PackageReference Include="Pandatech.Analyzers" Version="2.0.0" />
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
+        <PackageReference Include="Pandatech.Analyzers" Version="[2.1.0]" PrivateAssets="all"/>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="[10.19.0.132793]">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
