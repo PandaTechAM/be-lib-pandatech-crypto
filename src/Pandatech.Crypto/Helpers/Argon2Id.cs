@@ -3,71 +3,81 @@ using Konscious.Security.Cryptography;
 
 namespace Pandatech.Crypto.Helpers;
 
+/// <summary>
+///     Argon2id password hashing and verification.
+/// </summary>
 public static class Argon2Id
 {
-   internal static int SaltSize { get; private set; } = 16;
-   internal static int DegreeOfParallelism { get; private set; } = 8;
-   internal static int Iterations { get; private set; } = 5;
-   internal static int MemorySize { get; private set; } = 128 * 1024; // 128 MB
+    internal static int SaltSize { get; private set; } = 16;
+    internal static int DegreeOfParallelism { get; private set; } = 8;
+    internal static int Iterations { get; private set; } = 5;
+    internal static int MemorySize { get; private set; } = 128 * 1024; // 128 MB
 
 
-   public static byte[] HashPassword(string password)
-   {
-      var salt = Random.GenerateBytes(SaltSize);
-      return HashPassword(password, salt);
-   }
+    /// <summary>
+    ///     Hash a password with a random salt. The salt is prepended to the returned hash.
+    /// </summary>
+    public static byte[] HashPassword(string password)
+    {
+        var salt = Random.GenerateBytes(SaltSize);
+        return HashPassword(password, salt);
+    }
 
-   private static byte[] HashPassword(string password, byte[] salt)
-   {
-      using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
-      {
-         Salt = salt,
-         DegreeOfParallelism = DegreeOfParallelism,
-         Iterations = Iterations,
-         MemorySize = MemorySize
-      };
+    private static byte[] HashPassword(string password, byte[] salt)
+    {
+        using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
+        {
+            Salt = salt,
+            DegreeOfParallelism = DegreeOfParallelism,
+            Iterations = Iterations,
+            MemorySize = MemorySize
+        };
 
-      var result = salt.Concat(argon2.GetBytes(32))
-                       .ToArray();
+        var result = salt.Concat(argon2.GetBytes(32))
+            .ToArray();
 
-      return result;
-   }
+        return result;
+    }
 
-   public static bool VerifyHash(string password, byte[] passwordHash)
-   {
-      if (passwordHash.Length <= SaltSize)
-      {
-         throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(passwordHash));
-      }
+    /// <summary>
+    ///     Verify a password against a hash produced by <see cref="HashPassword(string)" /> using constant-time
+    ///     comparison.
+    /// </summary>
+    public static bool VerifyHash(string password, byte[] passwordHash)
+    {
+        if (passwordHash.Length <= SaltSize)
+        {
+            throw new ArgumentException($"Hash must be at least {SaltSize} bytes.", nameof(passwordHash));
+        }
 
-      var salt = passwordHash.Take(SaltSize)
-                             .ToArray();
+        var salt = passwordHash.Take(SaltSize)
+            .ToArray();
 
-      var newHash = HashPassword(password, salt);
-      return ConstantTimeComparison(passwordHash, newHash);
-   }
+        var newHash = HashPassword(password, salt);
+        return ConstantTimeComparison(passwordHash, newHash);
+    }
 
-   private static bool ConstantTimeComparison(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
-   {
-      if (a.Length != b.Length)
-      {
-         return false;
-      }
+    private static bool ConstantTimeComparison(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+    {
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
 
-      var diff = 0;
-      for (var i = 0; i < a.Length; i++)
-      {
-         diff |= a[i] ^ b[i];
-      }
+        var diff = 0;
+        for (var i = 0; i < a.Length; i++)
+        {
+            diff |= a[i] ^ b[i];
+        }
 
-      return diff == 0;
-   }
+        return diff == 0;
+    }
 
-   internal static void Configure(Argon2IdOptions options)
-   {
-      SaltSize = options.SaltSize;
-      DegreeOfParallelism = options.DegreeOfParallelism;
-      Iterations = options.Iterations;
-      MemorySize = options.MemorySize;
-   }
+    internal static void Configure(Argon2IdOptions options)
+    {
+        SaltSize = options.SaltSize;
+        DegreeOfParallelism = options.DegreeOfParallelism;
+        Iterations = options.Iterations;
+        MemorySize = options.MemorySize;
+    }
 }

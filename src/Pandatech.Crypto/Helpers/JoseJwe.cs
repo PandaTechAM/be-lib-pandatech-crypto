@@ -5,195 +5,211 @@ using Jose;
 
 namespace Pandatech.Crypto.Helpers;
 
+/// <summary>
+///     JWE (JSON Web Encryption) envelope encryption using RSA-OAEP-256 key management and A256GCM content encryption.
+/// </summary>
 public static class JoseJwe
 {
-   public static (string PublicJwk, string PrivateJwk, string Kid) IssueKeys(int bits = 2048)
-   {
-      if (bits < 2048)
-      {
-         throw new ArgumentOutOfRangeException(nameof(bits), "RSA key must be >= 2048 bits.");
-      }
+    /// <summary>
+    ///     Generate an RSA key pair as public/private JWKs along with the RFC 7638 key id (kid).
+    /// </summary>
+    public static (string PublicJwk, string PrivateJwk, string Kid) IssueKeys(int bits = 2048)
+    {
+        if (bits < 2048)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bits), "RSA key must be >= 2048 bits.");
+        }
 
-      using var rsa = RSA.Create(bits);
-      var pubJwk = ExportPublicJwk(rsa);
-      var prvJwk = ExportPrivateJwk(rsa);
-      var kid = Thumbprint(pubJwk);
-      return (pubJwk, prvJwk, kid);
-   }
+        using var rsa = RSA.Create(bits);
+        var pubJwk = ExportPublicJwk(rsa);
+        var prvJwk = ExportPrivateJwk(rsa);
+        var kid = Thumbprint(pubJwk);
+        return (pubJwk, prvJwk, kid);
+    }
 
-   public static string Encrypt(string publicJwk, byte[] payload, string kid)
-   {
-      // Validate kid matches public key
-      var computed = Thumbprint(publicJwk);
-      if (!string.Equals(computed, kid, StringComparison.Ordinal))
-      {
-         throw new ArgumentException("kid does not match publicJwk (RFC7638).", nameof(kid));
-      }
+    /// <summary>
+    ///     Encrypt a payload into a compact JWE using the given public JWK. The kid must match the key's RFC 7638
+    ///     thumbprint.
+    /// </summary>
+    public static string Encrypt(string publicJwk, byte[] payload, string kid)
+    {
+        // Validate kid matches public key
+        var computed = Thumbprint(publicJwk);
+        if (!string.Equals(computed, kid, StringComparison.Ordinal))
+        {
+            throw new ArgumentException("kid does not match publicJwk (RFC7638).", nameof(kid));
+        }
 
-      using var rsa = ImportPublic(publicJwk);
+        using var rsa = ImportPublic(publicJwk);
 
-      // JWE: RSA-OAEP-256 + A256GCM; compact serialization; header includes kid
-      return JWT.EncodeBytes(
-         payload,
-         rsa,
-         JweAlgorithm.RSA_OAEP_256,
-         JweEncryption.A256GCM,
-         extraHeaders: new Dictionary<string, object>
-         {
-            ["kid"] = kid
-         }
-      );
-   }
+        // JWE: RSA-OAEP-256 + A256GCM; compact serialization; header includes kid
+        return JWT.EncodeBytes(
+            payload,
+            rsa,
+            JweAlgorithm.RSA_OAEP_256,
+            JweEncryption.A256GCM,
+            extraHeaders: new Dictionary<string, object>
+            {
+                ["kid"] = kid
+            }
+        );
+    }
 
-   public static bool TryDecrypt(string privateJwk, string jwe, out byte[] payload)
-   {
-      try
-      {
-         using var rsa = ImportPrivate(privateJwk);
-         payload = JWT.DecodeBytes(jwe, rsa, JweAlgorithm.RSA_OAEP_256, JweEncryption.A256GCM);
-         return true;
-      }
-      catch
-      {
-         payload = [];
-         return false;
-      }
-   }
+    /// <summary>
+    ///     Try to decrypt a compact JWE with the given private JWK. Returns false instead of throwing on failure.
+    /// </summary>
+    public static bool TryDecrypt(string privateJwk, string jwe, out byte[] payload)
+    {
+        try
+        {
+            using var rsa = ImportPrivate(privateJwk);
+            payload = JWT.DecodeBytes(jwe, rsa, JweAlgorithm.RSA_OAEP_256, JweEncryption.A256GCM);
+            return true;
+        }
+        catch
+        {
+            payload = [];
+            return false;
+        }
+    }
 
-   public static string ComputeKid(string publicJwk)
-   {
-      return Thumbprint(publicJwk);
-   }
+    /// <summary>
+    ///     Compute the RFC 7638 thumbprint (kid) of a public JWK.
+    /// </summary>
+    public static string ComputeKid(string publicJwk)
+    {
+        return Thumbprint(publicJwk);
+    }
 
-   private static RSA ImportPublic(string jwkJson)
-   {
-      using var doc = JsonDocument.Parse(jwkJson);
-      var r = doc.RootElement;
-      if (r.GetProperty("kty")
-           .GetString() != "RSA")
-      {
-         throw new ArgumentException("kty must be RSA.");
-      }
+    private static RSA ImportPublic(string jwkJson)
+    {
+        using var doc = JsonDocument.Parse(jwkJson);
+        var r = doc.RootElement;
+        if (r.GetProperty("kty")
+                .GetString() != "RSA")
+        {
+            throw new ArgumentException("kty must be RSA.");
+        }
 
-      var n = Base64Url.Decode(r.GetProperty("n")
-                                .GetString()!);
+        var n = Base64Url.Decode(r.GetProperty("n")
+            .GetString()!);
 
-      if (n.Length * 8 < 2048)
-      {
-         throw new CryptographicException("RSA public key must be >= 2048 bits.");
-      }
+        if (n.Length * 8 < 2048)
+        {
+            throw new CryptographicException("RSA public key must be >= 2048 bits.");
+        }
 
-      var e = Base64Url.Decode(r.GetProperty("e")
-                                .GetString()!);
-      var p = new RSAParameters
-      {
-         Modulus = n,
-         Exponent = e
-      };
-      var rsa = RSA.Create();
-      rsa.ImportParameters(p);
-      return rsa;
-   }
+        var e = Base64Url.Decode(r.GetProperty("e")
+            .GetString()!);
+        var p = new RSAParameters
+        {
+            Modulus = n,
+            Exponent = e
+        };
+        var rsa = RSA.Create();
+        rsa.ImportParameters(p);
+        return rsa;
+    }
 
-   private static RSA ImportPrivate(string jwkJson)
-   {
-      using var doc = JsonDocument.Parse(jwkJson);
-      var r = doc.RootElement;
-      if (r.GetProperty("kty")
-           .GetString() != "RSA")
-      {
-         throw new ArgumentException("kty must be RSA.");
-      }
+    private static RSA ImportPrivate(string jwkJson)
+    {
+        using var doc = JsonDocument.Parse(jwkJson);
+        var r = doc.RootElement;
+        if (r.GetProperty("kty")
+                .GetString() != "RSA")
+        {
+            throw new ArgumentException("kty must be RSA.");
+        }
 
-      var n = Base64Url.Decode(r.GetProperty("n")
-                                .GetString()!);
-      if (n.Length * 8 < 2048)
-      {
-         throw new CryptographicException("RSA private key must be >= 2048 bits.");
-      }
+        var n = Base64Url.Decode(r.GetProperty("n")
+            .GetString()!);
+        if (n.Length * 8 < 2048)
+        {
+            throw new CryptographicException("RSA private key must be >= 2048 bits.");
+        }
 
-      var pars = new RSAParameters
-      {
-         Modulus = Base64Url.Decode(r.GetProperty("n")
-                                     .GetString()!),
+        var pars = new RSAParameters
+        {
+            Modulus = Base64Url.Decode(r.GetProperty("n")
+                .GetString()!),
 
-         Exponent = Base64Url.Decode(r.GetProperty("e")
-                                      .GetString()!),
-         D = Base64Url.Decode(r.GetProperty("d")
-                               .GetString()!)
-      };
+            Exponent = Base64Url.Decode(r.GetProperty("e")
+                .GetString()!),
+            D = Base64Url.Decode(r.GetProperty("d")
+                .GetString()!)
+        };
 
-      // optional CRT params if present
-      Try(r, "p", out pars.P);
-      Try(r, "q", out pars.Q);
-      Try(r, "dp", out pars.DP);
-      Try(r, "dq", out pars.DQ);
-      Try(r, "qi", out pars.InverseQ);
+        // optional CRT params if present
+        Try(r, "p", out pars.P);
+        Try(r, "q", out pars.Q);
+        Try(r, "dp", out pars.DP);
+        Try(r, "dq", out pars.DQ);
+        Try(r, "qi", out pars.InverseQ);
 
-      var rsa = RSA.Create();
-      rsa.ImportParameters(pars);
-      return rsa;
+        var rsa = RSA.Create();
+        rsa.ImportParameters(pars);
+        return rsa;
 
-      static void Try(JsonElement root, string name, out byte[]? val)
-      {
-         val = root.TryGetProperty(name, out var v) ? Base64Url.Decode(v.GetString()!) : null;
-      }
-   }
+        static void Try(JsonElement root, string name, out byte[]? val)
+        {
+            val = root.TryGetProperty(name, out var v) ? Base64Url.Decode(v.GetString()!) : null;
+        }
+    }
 
-   private static string ExportPublicJwk(RSA rsa)
-   {
-      var p = rsa.ExportParameters(false);
-      var o = new
-      {
-         kty = "RSA",
-         n = Base64Url.Encode(p.Modulus!),
-         e = Base64Url.Encode(p.Exponent!)
-      };
-      return JsonSerializer.Serialize(o);
-   }
+    private static string ExportPublicJwk(RSA rsa)
+    {
+        var p = rsa.ExportParameters(false);
+        var o = new
+        {
+            kty = "RSA",
+            n = Base64Url.Encode(p.Modulus!),
+            e = Base64Url.Encode(p.Exponent!)
+        };
+        return JsonSerializer.Serialize(o);
+    }
 
-   private static string ExportPrivateJwk(RSA rsa)
-   {
-      var p = rsa.ExportParameters(true);
-      var o = new
-      {
-         kty = "RSA",
-         n = Base64Url.Encode(p.Modulus!),
-         e = Base64Url.Encode(p.Exponent!),
-         d = Base64Url.Encode(p.D!),
-         p = p.P is null ? null : Base64Url.Encode(p.P),
-         q = p.Q is null ? null : Base64Url.Encode(p.Q),
-         dp = p.DP is null ? null : Base64Url.Encode(p.DP),
-         dq = p.DQ is null ? null : Base64Url.Encode(p.DQ),
-         qi = p.InverseQ is null ? null : Base64Url.Encode(p.InverseQ)
-      };
-      var json = JsonSerializer.Serialize(o);
-      // remove nulls (compact)
-      using var doc = JsonDocument.Parse(json);
-      using var ms = new MemoryStream();
-      using var w = new Utf8JsonWriter(ms);
-      w.WriteStartObject();
-      foreach (var prop in doc.RootElement
-                              .EnumerateObject()
-                              .Where(prop => prop.Value.ValueKind != JsonValueKind.Null))
-      {
-         prop.WriteTo(w);
-      }
+    private static string ExportPrivateJwk(RSA rsa)
+    {
+        var p = rsa.ExportParameters(true);
+        var o = new
+        {
+            kty = "RSA",
+            n = Base64Url.Encode(p.Modulus!),
+            e = Base64Url.Encode(p.Exponent!),
+            d = Base64Url.Encode(p.D!),
+            p = p.P is null ? null : Base64Url.Encode(p.P),
+            q = p.Q is null ? null : Base64Url.Encode(p.Q),
+            dp = p.DP is null ? null : Base64Url.Encode(p.DP),
+            dq = p.DQ is null ? null : Base64Url.Encode(p.DQ),
+            qi = p.InverseQ is null ? null : Base64Url.Encode(p.InverseQ)
+        };
+        var json = JsonSerializer.Serialize(o);
+        // remove nulls (compact)
+        using var doc = JsonDocument.Parse(json);
+        using var ms = new MemoryStream();
+        using var w = new Utf8JsonWriter(ms);
+        w.WriteStartObject();
+        foreach (var prop in doc.RootElement
+                     .EnumerateObject()
+                     .Where(prop => prop.Value.ValueKind != JsonValueKind.Null))
+        {
+            prop.WriteTo(w);
+        }
 
-      w.WriteEndObject();
-      w.Flush();
-      return Encoding.UTF8.GetString(ms.ToArray());
-   }
+        w.WriteEndObject();
+        w.Flush();
+        return Encoding.UTF8.GetString(ms.ToArray());
+    }
 
-   // RFC 7638 thumbprint over {"e","kty","n"} with lexicographic keys
-   private static string Thumbprint(string publicRsaJwk)
-   {
-      using var doc = JsonDocument.Parse(publicRsaJwk);
-      var r = doc.RootElement;
-      var canonical =
-         $$"""{"e":"{{r.GetProperty("e").GetString()}}" ,"kty":"RSA","n":"{{r.GetProperty("n").GetString()}}"}"""
-            .Replace(" ", "");
-      var hash = SHA256.HashData(Encoding.ASCII.GetBytes(canonical));
-      return Base64Url.Encode(hash);
-   }
+    // RFC 7638 thumbprint over {"e","kty","n"} with lexicographic keys
+    private static string Thumbprint(string publicRsaJwk)
+    {
+        using var doc = JsonDocument.Parse(publicRsaJwk);
+        var r = doc.RootElement;
+        var canonical =
+            $$"""{"e":"{{r.GetProperty("e").GetString()}}" ,"kty":"RSA","n":"{{r.GetProperty("n").GetString()}}"}"""
+                .Replace(" ", "");
+        var hash = SHA256.HashData(Encoding.ASCII.GetBytes(canonical));
+        return Base64Url.Encode(hash);
+    }
 }
