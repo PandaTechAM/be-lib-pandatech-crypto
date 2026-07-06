@@ -1,6 +1,7 @@
 # Pandatech.Crypto
 
-Unified cryptographic wrapper library for .NET 8+ providing AES encryption, password hashing, compression, and secure random generation.
+Unified cryptographic wrapper library for .NET 8+ providing AES encryption, password hashing, compression, and secure
+random generation.
 
 ## Installation
 
@@ -96,8 +97,8 @@ string pwd = Password.GenerateRandom(
    includeSpecialChars: true
 );
 
-bool valid = Password.Validate(pwd, minLength: 16, 
-   requireUppercase: true, requireLowercase: true, 
+bool valid = Password.Validate(pwd, minLength: 16,
+   requireUppercase: true, requireLowercase: true,
    requireDigits: true, requireSpecialChars: true);
 ```
 
